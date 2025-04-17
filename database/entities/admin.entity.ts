@@ -2,6 +2,7 @@ import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn 
 import { User } from "./user.entity";
 import { Casher } from "./casher.entity";
 import { SuperAdmin } from "./company.entity";
+import { PermissionStatus } from "../anum/permission.enum";
 
 @Entity("admin")
 export class Admin{
@@ -15,4 +16,6 @@ casher:Casher[];
 company:SuperAdmin;
 @Column({type:"enum",enum:PermissionStatus})
 status:PermissionState;
+@Column()
+created_at:Date;
 }
