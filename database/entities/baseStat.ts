@@ -7,7 +7,7 @@ import { YearlyStat } from "./yearly.aggregation.entity";
 @Entity("base-stat")
 export class BaseStat implements BaseStateInterface{
     @PrimaryGeneratedColumn("uuid")
-id:string;
+   id:string;
     @Column()
     total_games:number;
     @Column()
