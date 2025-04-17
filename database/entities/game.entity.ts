@@ -18,6 +18,9 @@ export class Game implements GameInterface{
     winner_cards:[number]
     @Column({type:"enum",enum:GameStatus})
     status: string;
+    @Column()
+    is_aggregated:boolean;
    @Column({type:"timestamptz"})
    created_at:Date;
+
 }
