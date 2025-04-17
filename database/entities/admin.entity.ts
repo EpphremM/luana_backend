@@ -1,5 +1,4 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./user.entity";
 import { Casher } from "./casher.entity";
 import { SuperAdmin } from "./company.entity";
 import { PermissionStatus } from "../anum/permission.enum";
