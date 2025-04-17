@@ -5,8 +5,8 @@ import { User } from "./user.entity";
 export class Admin{
 @PrimaryGeneratedColumn("uuid")
 id:string;
-@Column()
-status:string;
+@Column({type:"enum",enum:PermissionStatus})
+status:PermissionState;
 
 
 }
