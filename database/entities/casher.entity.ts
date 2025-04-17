@@ -4,10 +4,6 @@ import { PermissionStatus } from "../anum/permission.enum";
 export class Casher {
     @PrimaryColumn("uuid")
     id:string;
-    @Column()
-    password:string;
-    @Column()
-    username:string;
     @Column({type:"enum",enum:PermissionStatus})
     status:string;
 }
