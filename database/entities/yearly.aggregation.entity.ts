@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
 import { DailyInterface } from "../type/stat/stat.interface";
+import { Casher } from "./casher.entity";
 
 @Entity("daily")
 export class YearlyStat implements DailyInterface{
@@ -9,4 +10,6 @@ date:Date;
 total_games: number;
 @Column({type:'decimal',precision:30,scale:2})
 total_amount: number;
+@ManyToOne(()=>Casher,casher=>casher.yearly)
+casher:Casher;
 }
