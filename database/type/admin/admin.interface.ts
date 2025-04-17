@@ -7,5 +7,4 @@ export interface AdminInterface {
     net_earning: number;
     wallet:number;
     status:string;
-    user:UserInterface
 }

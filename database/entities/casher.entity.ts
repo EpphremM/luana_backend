@@ -10,8 +10,6 @@ export class Casher implements CasherInterface {
     id:string;
     @Column({type:"enum",enum:PermissionStatus})
     status:PermissionStatus;
-    @OneToOne(()=>User,user=>user.casher)
-    user:User[];
     @OneToMany(()=>Admin,admin=>admin.casher)
     @JoinColumn({name:"admin_id"})
     admin:Admin;

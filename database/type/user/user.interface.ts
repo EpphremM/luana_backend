@@ -1,3 +1,7 @@
+import { AdminInterface } from "../admin/admin.interface";
+import { CasherInterface } from "../casher/casher.interface";
+import { SuperInterface } from "../super_admin/super.admin.interface";
+
 export interface UserInterface{
     id?:string;
     first_name:string;
@@ -10,4 +14,7 @@ export interface UserInterface{
     total_earning?: number;
     net_earning?: number;
     wallet?:number;
+    casher?:CasherInterface;
+    admin?:AdminInterface;
+    super_admin?:SuperInterface;
 }

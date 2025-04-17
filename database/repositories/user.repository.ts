@@ -6,7 +6,8 @@ export class UserRepository{
     userRepository=AppDataSource.getRepository<UserInterface>(User)
     static userRepo:UserRepository|null=null;
     private constructor(){}
-    async register(user:UserInterface){
+    async register(userBody:UserInterface){
+        const user=await this.userRepository.create(userBody)
         return await this.userRepository.save(user);
     }
 

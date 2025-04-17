@@ -1,4 +1,5 @@
 import { AppDataSource } from "../data.source";
+import { Admin } from "../entities/admin.entity";
 import { User } from "../entities/user.entity";
 import { AdminInterface } from "../type/admin/admin.interface";
 import { UserInterface } from "../type/user/user.interface";
@@ -7,6 +8,10 @@ export class AdminRepository {
     adminRepository = AppDataSource.getRepository<AdminInterface>(User)
     static userRepo: AdminRepository | null = null;
     private constructor() { }
+
+    createObject(admin: AdminInterface) {
+        return this.adminRepository.create(admin)
+    }
     async register(user: AdminInterface) {
         return await this.adminRepository.save(user);
     }

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Casher } from "./casher.entity";
 import { SuperAdmin } from "./company.entity";
@@ -9,10 +9,8 @@ import { AdminInterface } from "../type/admin/admin.interface";
 export class Admin implements AdminInterface{
 @PrimaryGeneratedColumn("uuid")
 id:string;
-@OneToOne(()=>User,user=>user.admin)
-user:User;
-@Column({type:"enum",enum:PermissionStatus})
-status:PermissionState;
+@Column({type:"enum", enum: PermissionStatus})
+status: PermissionStatus;
 @Column()
 wallet:number;
 @Column({type:"decimal",precision:30,scale:2})

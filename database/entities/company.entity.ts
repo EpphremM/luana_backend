@@ -11,8 +11,6 @@ export class SuperAdmin implements SuperInterface{
      net_earning: number;
      @Column()
      fee_percentage:number;
-     @OneToOne(()=>User,user=>user.super_admin)
-     user=User;
      @OneToMany(()=>Admin,admin=>admin.company)
      admin:Admin[];
      @Column()
