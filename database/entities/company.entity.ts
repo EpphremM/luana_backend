@@ -5,6 +5,8 @@ import { SuperInterface } from "../type/super_admin/super.admin.interface";
 export class SuperAdmin implements SuperInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
-    @Column();
+    @Column()
      net_earning: number;
+     @Column()
+     fee_percentage:number;
 }

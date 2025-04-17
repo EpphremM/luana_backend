@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 import { UserRole } from "../anum/role.enum";  // Enum for user roles
 import { UserInterface } from "../type/user/user.interface";
 
@@ -21,4 +21,6 @@ export class User implements UserInterface {
 
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
+    @CreateDateColumn()
+    created_at: Date
 }
