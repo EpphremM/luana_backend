@@ -17,6 +17,17 @@ export const adminSchema = z.object({
   status: z.nativeEnum(PermissionStatus)
     .optional()
     .default(PermissionStatus.Pemitted),
+    password:z.string().refine((value) => {
+      return (
+        value.length >= 8 &&               
+        /[A-Z]/.test(value) &&              
+        /[a-z]/.test(value) &&              
+        /\d/.test(value) &&                 
+        /[!@#$%^&*(),.?":{}|<>]/.test(value)
+      );
+    }, {
+      message: "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.",
+    })
 
 }).required();
 

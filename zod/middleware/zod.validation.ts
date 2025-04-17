@@ -1,17 +1,34 @@
-import { Schema, ZodSchema } from "zod";
+import { Schema, ZodObject, ZodSchema } from "zod";
 import { AppError } from "../../express/error/app.error";
 
-export const inputValidation=(schema:ZodSchema,body:any)=>{
+type ValidationStatusResponse<T = any> = {
+    status: "success"  | "fail",
+    data?:  T,
+    errors?: {
+        path: string,
+        message: string
+    }[]
+}
+
+export const validateInput=async <T = any>(schema:ZodSchema,body:T)=>{
 try{
-const result=schema.safeParse(body);
+const result=await schema.safeParseAsync(body);
 if(result.success){
-    return {status:true,data:result.data}
+    const status: ValidationStatusResponse<T> = {
+        status: "success",
+        data: result.data
+    }
+    return status;
 }else{
     const errors=result.error.errors.map((err)=>({
       path:err.path.join('.'),
       message:err.message
     }));
-    return {status:false,errors};
+    const status: ValidationStatusResponse = {
+        status: "fail",
+        errors
+    }
+    return status;
  }
 }catch(error){
     new AppError("Validation error",400,"Operational",error)

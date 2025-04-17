@@ -1,8 +1,11 @@
+import { UserInterface } from "../user/user.interface";
+
 export interface AdminInterface {
-    id: string;
-    username: string;
-    package: string;
+    id?: string;
+    package: number;
     total_earning: number;
     net_earning: number;
     wallet:number;
+    status:string;
+    user:UserInterface
 }

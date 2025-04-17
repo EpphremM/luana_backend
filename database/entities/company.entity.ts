@@ -3,7 +3,7 @@ import { SuperInterface } from "../type/super_admin/super.admin.interface";
 import { User } from "./user.entity";
 import { Admin } from "./admin.entity";
 
-@Entity("entity")
+@Entity("company")
 export class SuperAdmin implements SuperInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
