@@ -7,6 +7,4 @@ export class Admin{
 id:string;
 @Column({type:"enum",enum:PermissionStatus})
 status:PermissionState;
-
-
 }

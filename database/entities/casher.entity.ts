@@ -6,5 +6,5 @@ export class Casher implements CasherInterface {
     @PrimaryColumn("uuid")
     id:string;
     @Column({type:"enum",enum:PermissionStatus})
-    status:string;
+    status:PermissionStatus;
 }
