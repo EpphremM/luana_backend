@@ -11,11 +11,11 @@ export class Casher implements CasherInterface {
     @Column({type:"enum",enum:PermissionStatus})
     status:PermissionStatus;
     @OneToOne(()=>User,user=>user.casher)
-    user:User;
+    user:User[];
     @OneToMany(()=>Admin,admin=>admin.casher)
     admin:Admin;
     @OneToMany(()=>Game,game=>game.casher)
-    game:Game;
+    game:Game[];
    @Column()
    created_at:Date
 }

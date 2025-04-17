@@ -10,7 +10,7 @@ id:string;
 @OneToOne(()=>User,user=>user.admin)
 user:User;
 @OneToMany(()=>Casher,casher=>casher.admin)
-casher=Casher;
+casher:Casher[];
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
 company:SuperAdmin;
 @Column({type:"enum",enum:PermissionStatus})

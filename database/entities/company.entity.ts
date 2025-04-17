@@ -14,7 +14,7 @@ export class SuperAdmin implements SuperInterface{
      @OneToOne(()=>User,user=>user.super_admin)
      user=User;
      @OneToMany(()=>Admin,admin=>admin.company)
-     admin:Admin;
+     admin:Admin[];
      @Column()
      created_at:Date;
 }
