@@ -1,5 +1,7 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Casher } from "./casher.entity";
+import { SuperAdmin } from "./company.entity";
 
 @Entity("admin")
 export class Admin{
@@ -7,6 +9,10 @@ export class Admin{
 id:string;
 @OneToOne(()=>User,user=>user.admin)
 user:User;
+@OneToMany(()=>Casher,casher=>casher.admin)
+casher=Casher;
+@ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
+company:SuperAdmin;
 @Column({type:"enum",enum:PermissionStatus})
 status:PermissionState;
 }

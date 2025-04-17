@@ -2,6 +2,7 @@ import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Timestam
 import { GameInterface } from "../type/game/game.interface";
 import { GameStatus } from "../anum/game.enum";
 import { User } from "./user.entity";
+import { Casher } from "./casher.entity";
 
 @Entity("game")
 export class Game implements GameInterface{
@@ -21,7 +22,8 @@ export class Game implements GameInterface{
     status: string;
     @Column()
     is_aggregated:boolean;
-    // @ManyToOne(()=>User,user=>user.games)
+  @ManyToMany(()=>Casher,casher=>casher.game)
+  casher:Casher;
    @Column({type:"timestamptz"})
    created_at:Date;
 
