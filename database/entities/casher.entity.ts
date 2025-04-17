@@ -1,4 +1,4 @@
-import {  Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import {  Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { PermissionStatus } from "../anum/permission.enum";
 import { CasherInterface } from "../type/casher/casher.interface";
 import { User } from "./user.entity";
@@ -17,8 +17,11 @@ export class Casher implements CasherInterface {
     user:User[];
     @OneToMany(()=>Admin,admin=>admin.casher)
     admin:Admin;
-    @OneToMany(()=>Game,game=>game.casher)
+    @ManyToOne(()=>Game,game=>game.casher)
+    @JoinColumn({name:"admin_id"})
     game:Game[];
+    @Column()
+    admin_id:string;
     @OneToMany(()=>DailyStat,daily=>daily.casher)
     daily:DailyStat[];
     @OneToMany(()=>MonthlyStat,month=>month.casher)
