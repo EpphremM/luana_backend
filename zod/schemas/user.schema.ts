@@ -1,16 +1,12 @@
-import { z } from "zod";
-import { UserRole } from "../../database/anum/role.enum";
-
-
-export const UserSchema = z.object({
-  id: z.string().uuid(),
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
-  username: z.string().min(1),
-  password: z.string().min(6), // adjust to your password policy
-  role: z.nativeEnum(UserRole),
-  created_at: z.coerce.date(),
-  casher: z.any().optional(),
-  admin: z.any().optional(),
-  super_admin: z.any().optional(),
-});
+import { z } from "zod"
+export const userSchema= z.object({
+    first_name: z.string().min(1, "First name is required"),
+    last_name: z.string().min(1, "Last name is required"),
+    username: z.string()
+      .min(3, "Username must be at least 3 characters")
+      .max(20, "Username cannot exceed 20 characters"),
+    password: z.string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Must contain at least one number"),
+  })
