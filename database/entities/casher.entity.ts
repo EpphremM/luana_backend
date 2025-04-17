@@ -16,9 +16,9 @@ export class Casher implements CasherInterface {
     @OneToOne(()=>User,user=>user.casher)
     user:User[];
     @OneToMany(()=>Admin,admin=>admin.casher)
+    @JoinColumn({name:"admin_id"})
     admin:Admin;
     @ManyToOne(()=>Game,game=>game.casher)
-    @JoinColumn({name:"admin_id"})
     game:Game[];
     @Column()
     admin_id:string;
