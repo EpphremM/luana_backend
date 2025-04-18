@@ -89,10 +89,12 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
   ): Promise<void> => {
     try {
       const { id } = req.params;
+      // Make sure to load the user relation
       const existingAdmin = await AdminRepository.getRepo().findById(id);
   
       if (!existingAdmin) {
-         res.status(404).json(createResponse("error","Admin not found",[]));
+        res.status(404).json(createResponse("error", "Admin not found", []));
+        return;
       }
   
       // Separate the update data
@@ -103,47 +105,64 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         first_name,
         last_name,
         username
-
       };
   
-      // Prepare admin updates
+      // Prepare admin updates - ensure we're using the nested admin data if provided
       const adminUpdates = {
-        status: adminData.status,
-        wallet: adminData.wallet,
-        total_earning: adminData.total_earning,
-        net_earning: adminData.net_earning,
-        package: adminData.package
+        status: adminData.admin?.status ?? existingAdmin.status,
+        wallet: adminData.admin?.wallet ?? existingAdmin.wallet,
+        total_earning: adminData.admin?.total_earning ?? existingAdmin.total_earning,
+        net_earning: adminData.admin?.net_earning ?? existingAdmin.net_earning,
+        package: adminData.admin?.package ?? existingAdmin.package
       };
   
       // Validate admin updates
-      const adminValidation = await validateInput(updateAdminSchema, adminUpdates);
+      const adminValidation = await validateInput(updateAdminSchema, { admin: adminUpdates });
       if (adminValidation.status !== "success") {
-         res.status(400).json({
+        res.status(400).json({
           status: "fail",
           message: "Admin validation error",
           errors: adminValidation.errors,
         });
+        return;
       }
   
-      Object.assign(existingAdmin, adminUpdates);
-      Object.assign(existingAdmin.user, userUpdates);
+      // Apply updates - do this carefully field by field
+      existingAdmin.status = adminUpdates.status;
+      existingAdmin.wallet = adminUpdates.wallet;
+      existingAdmin.total_earning = adminUpdates.total_earning;
+      existingAdmin.net_earning = adminUpdates.net_earning;
+      existingAdmin.package = adminUpdates.package;
+      
+      // Update user fields
+      if (existingAdmin.user) {
+        if (userUpdates.first_name) existingAdmin.user.first_name = userUpdates.first_name;
+        if (userUpdates.last_name) existingAdmin.user.last_name = userUpdates.last_name;
+        if (userUpdates.username) existingAdmin.user.username = userUpdates.username;
+      }
   
-      // Save the changes
+      // Save the changes - make sure your repository's saveWithUser method is working
       const updatedAdmin = await AdminRepository.getRepo().saveWithUser(existingAdmin);
   
+      // Verify the update
+      const persistedAdmin = await AdminRepository.getRepo().findById(id);
+  
       // Return clean response
-       res.status(200).json({
+      res.status(200).json({
         status: "success",
         message: "Admin updated successfully",
         data: {
           payload: {
-            id: updatedAdmin.id,
-            status: updatedAdmin.status,
-            wallet: updatedAdmin.wallet,
-            first_name: updatedAdmin.user.first_name,
-            last_name: updatedAdmin.user.last_name,
-            username: updatedAdmin.user.username,
-            updated_at: updatedAdmin.created_at
+            id: persistedAdmin.id,
+            status: persistedAdmin.status,
+            wallet: persistedAdmin.wallet,
+            total_earning: persistedAdmin.total_earning,
+            net_earning: persistedAdmin.net_earning,
+            package: persistedAdmin.package,
+            first_name: persistedAdmin.user?.first_name,
+            last_name: persistedAdmin.user?.last_name,
+            username: persistedAdmin.user?.username,
+            updated_at: new Date()
           }
         }
       });
@@ -153,7 +172,6 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       next(new AppError("Error updating admin", 500, "Operational", error));
     }
   };
-
   export const deleteAdmin = async (
     req: Request,
     res: Response,
@@ -173,7 +191,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       await AdminRepository.getRepo().deleteWithUser(admin);
   
       // 3. Return success response
-      res.status(204).json(createResponse("success","Admin deleted successfully",[]))
+      res.status(200).json(createResponse("success","Admin deleted successfully",[]))
   
     } catch (error) {
       next(new AppError("Error deleting admin", 500, "Operational", error));

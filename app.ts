@@ -3,6 +3,7 @@ import { UserRoutes } from "./routes/user.routes";
 import bodyParser from "body-parser";
 import { AdminRoutes } from "./routes/admin.routes";
 import { globalErrorHandler } from "./global/global.erro.handler";
+import { CompanyRoutes } from "./routes/company.routes";
 class App{
     public app:Application;
     constructor(){
@@ -19,8 +20,10 @@ class App{
     private intializeRoutes(){
         const userRoutes=new UserRoutes();
         const adminRutes=new AdminRoutes();
+        const companyRoutes=new CompanyRoutes();
         this.app.use("/bingo/v1/user",userRoutes.router)
         this.app.use("/bingo/v1/admin",adminRutes.router)
+        this.app.use("/bingo/v1/company",companyRoutes.router)
         this.app.use(globalErrorHandler);
     }
 }

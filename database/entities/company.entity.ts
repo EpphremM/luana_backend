@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { SuperInterface } from "../type/super_admin/super.admin.interface";
 import { User } from "./user.entity";
 import { Admin } from "./admin.entity";
@@ -14,6 +14,9 @@ export class SuperAdmin implements SuperInterface{
 
      @OneToMany(()=>Admin,admin=>admin.company)
      admin:Admin[];
-     @Column()
+     @OneToOne(()=>User,user=>user.super_admin)
+     @JoinColumn()
+     user?:User
+     @CreateDateColumn()
      created_at:Date;
 }
