@@ -1,3 +1,5 @@
+import { Casher } from "../../entities/casher.entity";
+import { Game } from "../../entities/game.entity";
 import { User } from "../../entities/user.entity";
 import { UserInterface } from "../user/user.interface";
 
@@ -9,4 +11,5 @@ export interface AdminInterface {
     wallet:number;
     status:string;
     user?:User;
+    cashers?:Casher[];
 }

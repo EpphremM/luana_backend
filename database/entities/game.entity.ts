@@ -22,7 +22,7 @@ export class Game implements GameInterface{
     status: string;
     @Column()
     is_aggregated:boolean;
-  @ManyToMany(()=>Casher,casher=>casher.game)
+  @ManyToOne(()=>Casher,casher=>casher.game)
   casher:Casher;
    @Column({type:"timestamptz"})
    created_at:Date;

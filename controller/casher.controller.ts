@@ -8,6 +8,9 @@ import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/anum/role.enum";
 import { createResponse } from "../express/types/response.body";
+import { CasherInterface } from "../database/type/casher/casher.interface";
+import { casherSchema } from "../zod/schemas/casher.schema";
+import { CasherRepository } from "../database/repositories/casher.repository";
 
 export const signup = async (
   req: Request,
@@ -15,14 +18,14 @@ export const signup = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const validationStatus = await validateInput<SuperInterface>(companySchema, req.body);
+    const validationStatus = await validateInput<CasherInterface>(casherSchema, req.body);
 
     if (validationStatus.status !== "success") {
         console.log(validationStatus);
       return next(new AppError("Invalid Request", 400, "Operational"));
     }
 
-    const { company, password, confirm_password, username, first_name, last_name } = req.body;
+    const { casher, password, confirm_password, username, first_name, last_name } = req.body;
 
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
@@ -40,15 +43,15 @@ export const signup = async (
       last_name,
       username,
       password: hashedPassword,
-      role: UserRole.Company,
+      role: UserRole.Casher
     });
 
-    const newCompany = await CompanyRepository.getRepo().register({
-      ...company,
+    const newCasher = await CasherRepository.getRepo().register({
+      ...casher,
       user,
     });
 
-    res.status(201).json(createResponse("success", "Company signup completed successfully", newCompany));
+    res.status(201).json(createResponse("success", "Casher signup completed successfully", newCasher));
   } catch (error) {
     console.log(error);
     return next(new AppError("Error occurred. Please try again.", 400, "Operational"));
