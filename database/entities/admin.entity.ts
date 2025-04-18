@@ -23,6 +23,7 @@ package:number;
 @JoinColumn()
 user: User;
 @OneToMany(() => Casher, casher => casher.admin)
+@JoinColumn()
  cashers: Casher[];
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
 company:SuperAdmin;

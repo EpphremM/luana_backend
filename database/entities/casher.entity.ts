@@ -10,13 +10,16 @@ export class Casher implements CasherInterface {
     id:string;
     @Column({type:"enum",enum:PermissionStatus,default:PermissionStatus.Pemitted})
     status:string;
-    @OneToMany(()=>Admin,admin=>admin.cashers)
+    @ManyToOne(()=>Admin,admin=>admin.cashers)
     @JoinColumn({name:"admin_id"})
     admin:Admin;
     @OneToMany(()=>Game,game=>game.casher)
     game?:Game[];
-    @Column()
-    admin_id:string;
+    @OneToOne(()=>User,user=>user.casher)
+    @JoinColumn()
+    user?:User
+    @Column({nullable:true})
+    admin_id?:string;
    @CreateDateColumn()
    created_at:Date
 }

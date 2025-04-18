@@ -58,63 +58,64 @@ export const signup = async (
   }
 };
 
-export const getCompanies = async (
+export const getCashers = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const companies = await CompanyRepository.getRepo().find();
-    res.status(200).json(createResponse("success", "Companies fetched successfully", companies));
+    const cashers = await CasherRepository.getRepo().find();
+    res.status(200).json(createResponse("success", "Cashers fetched successfully", cashers));
   } catch (error) {
-    next(new AppError("Failed to fetch companies", 500, "Operational"));
+    console.log(error);
+    next(new AppError("Failed to fetch cashers", 500, "Operational"));
   }
 };
 
-export const getOneCompany = async (
+export const getOneCasher = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const company = await CompanyRepository.getRepo().findById(id);
+    const casher = await CasherRepository.getRepo().findById(id);
     
-    if (!company) {
-      return next(new AppError("Company not found", 404, "Operational"));
+    if (!casher) {
+      return next(new AppError("Casher not found", 404, "Operational"));
     }
     
-    res.status(200).json(createResponse("success", "Company fetched successfully", company));
+    res.status(200).json(createResponse("success", "Casher fetched successfully", casher));
   } catch (error) {
     next(new AppError("Error occurred. Please try again.", 400, "Operational"));
   }
 };
 
-export const updateCompany = async (
+export const updateCasher = async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
     try {
       const { id } = req.params;
-      const existingCompany = await CompanyRepository.getRepo().findById(id);
+      const existingCasher = await CasherRepository.getRepo().findById(id);
   
-      if (!existingCompany) {
-        res.status(404).json(createResponse("error", "Company not found", []));
+      if (!existingCasher) {
+        res.status(404).json(createResponse("error", "Casher not found", []));
         return;
       }
   
       // Destructure request body
       const { 
-        company: companyData, 
+        casher: casherData, 
         first_name, 
         last_name, 
         username 
       } = req.body;
   
       // Validate company data if provided
-      if (companyData) {
-        const validation = await validateInput(updateCompanySchema, { company: companyData });
+      if (casherData) {
+        const validation = await validateInput(updateCompanySchema, { company: casherData });
         if (validation.status !== "success") {
           res.status(400).json({
             status: "fail",
@@ -125,23 +126,20 @@ export const updateCompany = async (
         }
   
         // Update company fields
-        if (companyData.net_earning !== undefined) {
-          existingCompany.net_earning = companyData.net_earning;
+        if (casherData.status !== undefined) {
+          existingCasher.status = casherData.status;
         }
-        if (companyData.fee_percentage !== undefined) {
-          existingCompany.fee_percentage = companyData.fee_percentage;
-        }
-      }
+  
   
       // Update user fields if provided
-      if (existingCompany.user) {
-        if (first_name) existingCompany.user.first_name = first_name;
-        if (last_name) existingCompany.user.last_name = last_name;
-        if (username) existingCompany.user.username = username;
+      if (existingCasher.user) {
+        if (first_name) existingCasher.user.first_name = first_name;
+        if (last_name) existingCasher.user.last_name = last_name;
+        if (username) existingCasher.user.username = username;
       }
   
       // Save the updated company
-      const updatedCompany = await CompanyRepository.getRepo().saveWithUser(existingCompany);
+      const updatedCasher = await CasherRepository.getRepo().saveWithUser(existingCasher);
   
       // Return response
       res.status(200).json({
@@ -149,38 +147,50 @@ export const updateCompany = async (
         message: "Company updated successfully",
         data: {
           payload: {
-            id: updatedCompany.id,
-            net_earning: updatedCompany.net_earning,
-            fee_percentage: updatedCompany.fee_percentage,
-            first_name: updatedCompany.user?.first_name,
-            last_name: updatedCompany.user?.last_name,
-            username: updatedCompany.user?.username,
+            id: updatedCasher.id,
+            status: updatedCasher.status,
+            first_name: updatedCasher.user?.first_name,
+            last_name: updatedCasher.user?.last_name,
+            username: updatedCasher.user?.username,
             updated_at: new Date()
           }
         }
       });
-  
+    }
     } catch (error) {
       next(new AppError("Error updating company", 500, "Operational", error));
     }
   };
-export const deleteCompany = async (
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+export const deleteCasher = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const company = await CompanyRepository.getRepo().findById(id);
+    const casher = await CasherRepository.getRepo().findById(id);
 
-    if (!company) {
-      res.status(404).json(createResponse("fail", "Company not found", []));
+    if (!casher) {
+      res.status(404).json(createResponse("fail", "Casher not found", []));
       return;
     }
 
-    await CompanyRepository.getRepo().deleteWithUser(company);
-    res.status(200).json(createResponse("success", "Company deleted successfully", []));
+    await CasherRepository.getRepo().deleteWithUser(casher);
+    res.status(200).json(createResponse("success", "Casher deleted successfully", []));
   } catch (error) {
-    next(new AppError("Error deleting company", 500, "Operational", error));
+    next(new AppError("Error deleting casher", 500, "Operational", error));
   }
 };

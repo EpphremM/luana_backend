@@ -22,7 +22,7 @@ export class CasherRepository {
     }
 
     async find() {
-        return await this.casherRepository.find({ relations: ["user"] });
+        return await this.casherRepository.find({ relations: ["user","admin"] });
     }
 
     async findById(id: string) {
@@ -43,22 +43,22 @@ export class CasherRepository {
             return await this.casherRepository.save(casher);
         } catch (error) {
             console.error('Update error:', error);
-            throw new Error('Failed to persist company updates');
+            throw new Error('Failed to persist casher updates');
         }
     }
 
-    async saveWithUser(company): Promise<SuperAdmin> {
+    async saveWithUser(casher): Promise<Casher> {
         const queryRunner = this.casherRepository.manager.connection.createQueryRunner();
         
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            if (company.user) {
-                await queryRunner.manager.save(company.user);
+            if (casher.user) {
+                await queryRunner.manager.save(casher.user);
             }
 
-            const result = await queryRunner.manager.save(company);
+            const result = await queryRunner.manager.save(casher);
             await queryRunner.commitTransaction();
             return result;
         } catch (error) {

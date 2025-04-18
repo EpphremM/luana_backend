@@ -24,8 +24,8 @@ export class User implements UserInterface {
 
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
-    // @OneToOne(() => Casher)
-    // casher? = Casher;
+    @OneToOne(() => Casher,casher=>casher.user)
+    casher? = Casher;
     @OneToOne(() => Admin, admin => admin.user)
     admin?: Admin;
     

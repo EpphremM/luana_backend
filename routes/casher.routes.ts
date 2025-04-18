@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup } from "../controller/casher.controller";
+import { deleteCasher, getCashers, getOneCasher, signup, updateCasher } from "../controller/casher.controller";
 
 
 
@@ -11,7 +11,7 @@ constructor(){
 }
 private setRoutes(){
     this.router.route("/").post(signup);
-    // this.router.route("/").get(getCompanies);
-    // this.router.route("/:id").get(getOneCompany).patch(updateCompany).delete(deleteCompany);
+    this.router.route("/").get(getCashers);
+    this.router.route("/:id").get(getOneCasher).patch(updateCasher).delete(deleteCasher);
 }
 }

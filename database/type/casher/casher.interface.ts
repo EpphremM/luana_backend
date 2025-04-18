@@ -10,8 +10,9 @@ export interface CasherInterface{
     created_at:Date
     admin?:Admin,
     game?:Game[],
-    admin_id:string;
+    admin_id?:string;
     user?:User;
     casher?:Casher[];
+
 
 }
