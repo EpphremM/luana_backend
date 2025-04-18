@@ -18,7 +18,7 @@ export class Game implements GameInterface{
     total_player: number;
     @Column({type:"jsonb",default:[]})
     winner_cards:number[]
-    @Column({type:"enum",enum:GameStatus})
+    @Column({type:"enum",enum:GameStatus,default:GameStatus.Playing})
     status: string;
     @Column()
     is_aggregated:boolean;
