@@ -8,7 +8,7 @@ export class UserRepository{
     private constructor(){}
     async register(userBody:UserInterface){
         const user= this.userRepository.create(userBody)
-        console.log(user);
+        console.log(user)
         return await this.userRepository.save(user);
     }
 
@@ -16,7 +16,7 @@ export class UserRepository{
         return  this.userRepository.create(user)
     }
  async find() {
-        return await this.userRepository.createQueryBuilder("user").leftJoinAndSelect("casher.game", "game").leftJoinAndSelect("company.admin","admin").getMany();
+        return await this.userRepository.find({relations:["admin"]});
     }
     async findById(id:string){
 return await this.userRepository.find({where:{id},relations:["company","casher","admin"]});

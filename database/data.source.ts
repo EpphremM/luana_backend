@@ -9,7 +9,7 @@ export const AppDataSource: DataSource = new DataSource({
   port: parseInt(ENV.db_port || "5432"),
   database: ENV.db_name,
   password: ENV.db_password,
-  entities: [__dirname + "/entities/**/*.ts",__dirname+"/../payment/entities/**/*.ts"],
+  entities: [__dirname + '/entities/*.entity.{ts,js}',__dirname+"/../payment/entities/**/*.ts"],
   migrations: [__dirname + "/migration/**/*.ts"],
   synchronize: true,
   // ssl: { rejectUnauthorized: true }

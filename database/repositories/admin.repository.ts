@@ -5,26 +5,27 @@ import { AdminInterface } from "../type/admin/admin.interface";
 import { UserInterface } from "../type/user/user.interface";
 
 export class AdminRepository {
-    adminRepository = AppDataSource.getRepository<AdminInterface>(User)
+    adminRepository = AppDataSource.getRepository<AdminInterface>(Admin)
     static userRepo: AdminRepository | null = null;
     private constructor() { }
 
-    createObject(admin: AdminInterface) {
+    createObject(admin) {
         return this.adminRepository.create(admin)
     }
-    async register(user: AdminInterface) {
+    async register(user) {
         return await this.adminRepository.save(user);
     }
     async find() {
-        return await this.adminRepository.createQueryBuilder("admin").leftJoinAndSelect("casher.game", "game").leftJoinAndSelect("casher.company", "company").getMany();
+        return await this.adminRepository.find({relations:["user"]});
     }
+    
     async findById(id:string){
 return await this.adminRepository.find({where:{id},relations:["company","casher","casher.game"]});
     }
     async Delete(id:string){
         return this.adminRepository.delete(id);
     }
-    async update(id:string,newAdmin:Partial<AdminInterface>){
+    async update(id:string,newAdmin){
 await this.adminRepository.update(id,newAdmin);
 return await this.adminRepository.findOneBy({id});
     }
