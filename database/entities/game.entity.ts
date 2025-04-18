@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
 import { GameInterface } from "../type/game/game.interface";
 import { GameStatus } from "../anum/game.enum";
 import { User } from "./user.entity";
@@ -23,8 +23,10 @@ export class Game implements GameInterface{
     @Column()
     is_aggregated:boolean;
   @ManyToOne(()=>Casher,casher=>casher.game)
+  @JoinColumn({name:"casher_id"})
   casher:Casher;
-   @Column({type:"timestamptz"})
+  @Column()
+  casher_id?:string
+   @CreateDateColumn({type:"timestamptz"})
    created_at:Date;
-
 }

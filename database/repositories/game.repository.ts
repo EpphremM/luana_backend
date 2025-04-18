@@ -19,7 +19,7 @@ async delete(id:string){
     return await this.gameRepository.delete(id)
 }
 
-    async update(game: Game, updateData: Partial<GameInterface>): Promise<Game> {
+    async update(game, updateData) {
         try {
             Object.assign(game, updateData);
             return await this.gameRepository.save(game);
@@ -28,10 +28,10 @@ async delete(id:string){
             throw new Error('Failed to persist game updates');
         }
     }
-static gerRepo(){
-    if(!GameRepository.gameRepo){
-        GameRepository.gameRepo=new GameRepository();
+    static getRepo() {
+        if (!GameRepository.gameRepo) {
+            GameRepository.gameRepo = new GameRepository();
+        }
+        return GameRepository.gameRepo;
     }
-    return GameRepository;
-}
 }
