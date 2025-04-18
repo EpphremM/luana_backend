@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { adminSignup, getAdmin } from "../controller/admin.controller";
+import { signup, getAdmin, getOne, update, deleteAdmin } from "../controller/admin.controller";
 
 export class AdminRoutes{
 public router:Router;
@@ -8,7 +8,8 @@ constructor(){
     this.setRoutes();
 }
 private setRoutes(){
-    this.router.route("/").post(adminSignup);
+    this.router.route("/").post(signup);
     this.router.route("/").get(getAdmin);
+    this.router.route("/:id").get(getOne).patch(update).delete(deleteAdmin);
 }
 }

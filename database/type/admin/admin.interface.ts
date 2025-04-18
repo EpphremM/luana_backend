@@ -1,3 +1,4 @@
+import { User } from "../../entities/user.entity";
 import { UserInterface } from "../user/user.interface";
 
 export interface AdminInterface {
@@ -7,4 +8,5 @@ export interface AdminInterface {
     net_earning: number;
     wallet:number;
     status:string;
+    user?:User;
 }
