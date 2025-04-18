@@ -12,6 +12,7 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
         const validationStatus = await validateInput<GameInterface>(createGameSchema, req.body);
 
         if (validationStatus.status !== "success") {
+            console.log(validationStatus);
             return next(new AppError("Invalid game data", 400));
         }
 

@@ -3,7 +3,7 @@ import { createGame, deleteGame, getAllGames, getOneGame, updateGame } from "../
 
 
 
-export class CompanyRoutes{
+export class GameRoutes{
 public router:Router;
 constructor(){
     this.router=Router();

@@ -15,8 +15,8 @@ export const gameSchema = z.object({
   winner_cards: winnerCardsSchema.default([]),
   status: z.nativeEnum(GameStatus),
   is_aggregated: z.boolean().default(false),
-  casher: z.string().uuid("Casher ID must be a valid UUID"), // Assuming we just need the ID for relationship
-  created_at: z.date().optional() // Optional since it's auto-generated
+  casher: z.string().uuid("Casher ID must be a valid UUID").optional(), 
+  created_at: z.date().optional() 
 });
 
 export const updateGameSchema = gameSchema.partial().refine(data => {
