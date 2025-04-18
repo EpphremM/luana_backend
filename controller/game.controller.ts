@@ -32,7 +32,7 @@ export const getAllGames = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-export const getGameById = async (req: Request, res: Response, next: NextFunction) => {
+export const getOneGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const game = await GameRepository.getRepo().findById(id);

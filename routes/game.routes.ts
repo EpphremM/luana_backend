@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createGame, deleteGame, getAllGames, getGameById, updateGame } from "../controller/game.controller";
+import { createGame, deleteGame, getAllGames, getOneGame, updateGame } from "../controller/game.controller";
 
 
 
@@ -12,6 +12,6 @@ constructor(){
 private setRoutes(){
     this.router.route("/").post(createGame);
     this.router.route("/").get(getAllGames);
-    this.router.route("/:id").get(getGameById).patch(updateGame).delete(deleteGame);
+    this.router.route("/:id").get(getOneGame).patch(updateGame).delete(deleteGame);
 }
 }
