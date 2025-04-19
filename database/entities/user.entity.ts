@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, OneToMany } from "typeorm";
 import { UserRole } from "../anum/role.enum";  // Enum for user roles
 import { UserInterface } from "../type/user/user.interface";
 import { Casher } from "./casher.entity";
 import { Admin } from "./admin.entity";
 import { SuperAdmin } from "./company.entity";
+import { RefreshToken } from "./refresh.entity";
 
 @Entity("user")
 export class User implements UserInterface {
@@ -28,7 +29,8 @@ export class User implements UserInterface {
     casher? = Casher;
     @OneToOne(() => Admin, admin => admin.user)
     admin?: Admin;
-    
+    @OneToMany(() => RefreshToken, (token) => token.user)
+    refreshTokens: RefreshToken[];
     @OneToOne(()=>SuperAdmin)
     super_admin?:SuperAdmin;
     @CreateDateColumn()
