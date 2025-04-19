@@ -6,6 +6,8 @@ import { globalErrorHandler } from "./global/global.erro.handler";
 import { CompanyRoutes } from "./routes/company.routes";
 import { CasherRoutes } from "./routes/casher.routes";
 import { GameRoutes } from "./routes/game.routes";
+import { AuthRoutes } from "./routes/auth.routes";
+
 class App{
     public app:Application;
     constructor(){
@@ -25,11 +27,13 @@ class App{
         const companyRoutes=new CompanyRoutes();
         const casherRoutes=new CasherRoutes();
         const gameRoutes=new GameRoutes();
+        const authRoutes= new AuthRoutes();
         this.app.use("/bingo/v1/user",userRoutes.router)
         this.app.use("/bingo/v1/admin",adminRutes.router)
         this.app.use("/bingo/v1/company",companyRoutes.router)
         this.app.use("/bingo/v1/casher",casherRoutes.router)
         this.app.use("/bingo/v1/game",gameRoutes.router)
+        this.app.use("/bingo/v1",authRoutes.router)
         this.app.use(globalErrorHandler);
     }
 }
