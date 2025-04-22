@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { AppDataSource } from '../database/data.source';
 import { User } from '../database/entities/user.entity';
 import { RefreshToken } from '../database/entities/refresh.entity';
+import { Console } from 'console';
 
 const userRepository = AppDataSource.getRepository(User);
 const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);
@@ -19,12 +20,12 @@ export const generateDeviceFingerprint = (req: Request): string => {
 export const generateAccessToken = (user: User, fingerprint: string): string => {
   return jwt.sign(
     {
-      userId: user.id,
+      userId:user.admin?.id||user.casher?.id||user.super_admin?.id,
       role: user.role,
       fingerprint
     },
     process.env.JWT_SECRET!,
-    { expiresIn: '15m' }
+    { expiresIn: '1h' }
   );
 };
 
@@ -33,7 +34,7 @@ export const generateRefreshToken = (): string => {
 };
 
 export const validateUser = async (username: string, password: string): Promise<User | null> => {
-  const user = await userRepository.findOne({ where: { username } });
+  const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin"]});
   if (user && (await bcrypt.compare(password, user.password))) {
     return user;
   }
@@ -85,14 +86,15 @@ export const loginUser = async (username: string, password: string, req: Request
   const refreshToken = generateRefreshToken();
 
   await createRefreshToken(user, refreshToken, fingerprint);
-
+console.log(user);
   return {
     user: {
       id: user.id,
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
-      role: user.role
+      role: user.role,
+      userId:user.admin?.id||user.casher?.id||user.super_admin?.id,
     },
     accessToken,
     refreshToken
@@ -130,3 +132,11 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
     await revokeRefreshToken(token);
   }
 };
+
+
+
+
+export const decodeToken=(token)=>{
+  const decoded = jwt.verify(token,process.env.JWT_SECRET);
+  return decoded;
+}

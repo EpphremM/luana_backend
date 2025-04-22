@@ -22,17 +22,17 @@ export class CasherRepository {
     }
 
     async find() {
-        return await this.casherRepository.find({ relations: ["user","admin"] });
+        return await this.casherRepository.find({ relations: ["user","admin","game"] });
     }
 
     async findById(id: string) {
         const casher = await this.casherRepository.findOne({
             where: { id },
-            relations: ["user"],
+            relations: ["user","game"],
         });
         return casher;
     }
-
+ 
     async delete(id: string) {
         return this.casherRepository.delete(id);
     }

@@ -26,12 +26,12 @@ export class User implements UserInterface {
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
     @OneToOne(() => Casher,casher=>casher.user)
-    casher? = Casher;
+    casher?:Casher;
     @OneToOne(() => Admin, admin => admin.user)
     admin?: Admin;
     @OneToMany(() => RefreshToken, (token) => token.user)
     refreshTokens: RefreshToken[];
-    @OneToOne(()=>SuperAdmin)
+    @OneToOne(()=>SuperAdmin,superr=>superr.user)
     super_admin?:SuperAdmin;
     @CreateDateColumn()
     created_at: Date

@@ -1,7 +1,7 @@
 export class AppError extends Error {
   public statusCode: number;
   public isOperational: boolean;
-  public originalError?: Error;
+  public originalError?: any;
 
   constructor(
     message: string,

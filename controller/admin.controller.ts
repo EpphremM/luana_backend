@@ -8,6 +8,7 @@ import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/anum/role.enum";
 import { createResponse } from "../express/types/response.body";
+import { error } from "console";
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validationStatus = await validateInput<AdminInterface>(adminSchema, req.body);
@@ -106,14 +107,15 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         last_name,
         username
       };
+      console.log("Existing admin",existingAdmin);
   
       // Prepare admin updates - ensure we're using the nested admin data if provided
       const adminUpdates = {
         status: adminData.admin?.status ?? existingAdmin.status,
-        wallet: adminData.admin?.wallet ?? existingAdmin.wallet,
-        total_earning: adminData.admin?.total_earning ?? existingAdmin.total_earning,
-        net_earning: adminData.admin?.net_earning ?? existingAdmin.net_earning,
-        package: adminData.admin?.package ?? existingAdmin.package
+        wallet: adminData.admin?.wallet ?? Number(existingAdmin.wallet),
+        total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
+        net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
+        package: adminData.admin?.package ?? Number(existingAdmin.package)
       };
   
       // Validate admin updates

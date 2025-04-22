@@ -17,13 +17,13 @@ export class AdminRepository {
         return await this.adminRepository.save(user);
     }
     async find() {
-        return await this.adminRepository.find({relations:["user"]});
+        return await this.adminRepository.find({relations:["user","cashers"]});
     }
     
     async findById(id: string) {
           const admin = await this.adminRepository.findOne({
             where: { id },
-            relations: ["user"], 
+            relations: ["user","cashers","cashers.user"], 
           });
           return admin;
       }

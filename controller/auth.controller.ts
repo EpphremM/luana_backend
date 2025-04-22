@@ -3,8 +3,11 @@ import {
   loginUser,
   refreshUserToken,
   logoutUser,
-  generateDeviceFingerprint
+  generateDeviceFingerprint,
+  decodeToken
 } from '../services/auth.service';
+import { createResponse } from '../express/types/response.body';
+import { NextFunction } from 'grammy';
 
 declare global {
   namespace Express {
@@ -19,19 +22,19 @@ declare global {
 }
 
 const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  // const isProduction = process.env.NODE_ENV === 'production';
   
   res.cookie('access_token', accessToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    secure: false,
+    sameSite:"lax",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    secure: false,
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
@@ -41,16 +44,12 @@ export const login = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     const result = await loginUser(username, password, req);
     setAuthCookies(res, result.accessToken, result.refreshToken);
+    console.log(result.accessToken);
     
-    res.json({
-      success: true,
-      user: result.user
-    });
+    res.json(createResponse("success","User logged in successfully",result.user));
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Login failed'
-    });
+    console.log(error);
+    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed',[]));
   }
 };
 
@@ -68,10 +67,7 @@ export const refresh = async (req: Request, res: Response) => {
     
     res.json({ success: true });
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Token refresh failed'
-    });
+    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Token refresh failed',[]));
   }
 };
 
@@ -87,9 +83,54 @@ export const logout = async (req: Request, res: Response) => {
     
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Logout failed'
-    });
+    res.status(500).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed',[]));
+  }
+};
+
+export const validateSession = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 1. Check for access token in cookies
+    const accessToken = req.cookies['access_token'];
+    // console.log(accessToken);
+    if (!accessToken) {
+      res.status(401).json(
+        createResponse("fail", "No access token provided", [])
+      );
+      return; // Explicit return
+    }
+
+    // 2. Verify and decode the token
+    const decoded = decodeToken(accessToken);
+    if (!decoded) {
+      res.status(401).json(
+        createResponse("fail", "Invalid token", [])
+      );
+      return;
+    }
+
+    // 3. Verify device fingerprint matches
+    const currentFingerprint = generateDeviceFingerprint(req);
+    if (decoded.fingerprint !== currentFingerprint) {
+      res.status(401).json(
+        createResponse("fail", "Device mismatch", [])
+      );
+      return;
+    }
+
+    // 4. If all checks pass, return success with user data
+    res.status(200).json(
+      createResponse("success", "Session valid", {
+        user: {
+          userId: decoded.userId,
+          role: decoded.role,
+          fingerprint: decoded.fingerprint
+        }
+      })
+    );
+
+  } catch (error) {
+    res.status(401).json(
+      createResponse("fail", error instanceof Error ? error.message : "Session validation failed", [])
+    );
   }
 };
