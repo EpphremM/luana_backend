@@ -17,7 +17,7 @@ export class AdminRepository {
         return await this.adminRepository.save(user);
     }
     async find() {
-        return await this.adminRepository.find({relations:["user","cashers"]});
+        return await this.adminRepository.find({relations:["user","cashers","company"]});
     }
     
     async findById(id: string) {

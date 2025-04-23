@@ -9,7 +9,7 @@ import { User } from "./user.entity";
 export class Admin implements AdminInterface{
 @PrimaryGeneratedColumn("uuid")
 id:string;
-@Column({type:"enum", enum: PermissionStatus})
+@Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted})
 status: PermissionStatus;
 @Column()
 wallet:number;
@@ -26,7 +26,10 @@ user: User;
 @JoinColumn()
  cashers: Casher[];
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
+@JoinColumn({name:"super_id"})
 company:SuperAdmin;
+@Column({nullable:true})
+super_id:string;
 @CreateDateColumn()
 created_at:Date;
 }
