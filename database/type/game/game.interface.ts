@@ -9,7 +9,6 @@ export class GameInterface{
     total_player:number;
     status:string;
     created_at:Date;
-    is_aggregated:boolean;
     casher_id?:string;
     casher?:Casher;
 }

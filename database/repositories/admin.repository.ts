@@ -23,7 +23,7 @@ export class AdminRepository {
     async findById(id: string) {
           const admin = await this.adminRepository.findOne({
             where: { id },
-            relations: ["user","cashers","cashers.user"], 
+            relations: ["user","cashers","cashers.user","company"], 
           });
           return admin;
       }
