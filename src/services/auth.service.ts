@@ -81,6 +81,10 @@ export const loginUser = async (username: string, password: string, req: Request
   if (!user) {
     throw new Error('Invalid credentials');
   }
+  const status=user?.admin?.status||user?.casher?.status;
+ if(status==="blocked"){
+  throw new Error("Temporarily account is blocked please contact admin");
+ }
 
   const fingerprint = generateDeviceFingerprint(req);
   const accessToken = generateAccessToken(user, fingerprint);
