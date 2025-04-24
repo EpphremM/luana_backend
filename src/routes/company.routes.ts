@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { deleteCompany, getCompanies, getOneCompany, signup, updateCompany } from "../controller/company.controller";
+import { requireRole } from "../utils/role.middleware";
+import { UserRole } from "../database/anum/role.enum";
 
 
 export class CompanyRoutes{
@@ -9,8 +11,8 @@ constructor(){
     this.setRoutes();
 }
 private setRoutes(){
-    this.router.route("/").post(signup);
-    this.router.route("/").get(getCompanies);
-    this.router.route("/:id").get(getOneCompany).patch(updateCompany).delete(deleteCompany);
+    this.router.route("/").post(requireRole(UserRole.Company),signup);
+    this.router.route("/").get(requireRole(UserRole.Company),getCompanies);
+    this.router.route("/:id").get(requireRole([UserRole.Company]),getOneCompany).patch(requireRole(UserRole.Company),updateCompany).delete(requireRole(UserRole.Company),deleteCompany);
 }
 }
