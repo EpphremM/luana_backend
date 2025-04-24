@@ -5,13 +5,16 @@ import { UserRole } from '../database/anum/role.enum';
 
 
 
-export const requireRole = (roles: UserRole[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+export const requireRole = (roles: UserRole | UserRole[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const rolesArray = Array.isArray(roles) ? roles : [roles];
+    
     try {
       const token = req.cookies['access_token'] || req.headers['authorization']?.split(' ')[1];
       
       if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+        res.status(401).json({ message: 'No token provided' });
+        return;
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
@@ -20,19 +23,21 @@ export const requireRole = (roles: UserRole[]) => {
         fingerprint: string;
       };
 
-      if (!roles.includes(decoded.role)) {
-        return res.status(403).json({ message: 'Insufficient permissions' });
+      if (!rolesArray.includes(decoded.role)) {
+        res.status(403).json({ message: 'Insufficient permissions' });
+        return;
       }
 
       const fingerprint = generateDeviceFingerprint(req);
       if (decoded.fingerprint !== fingerprint) {
-        return res.status(401).json({ message: 'Device mismatch' });
+        res.status(401).json({ message: 'Device mismatch' });
+        return;
       }
 
       req.user = decoded;
-      next();
+      next(); // Properly continue to next middleware
     } catch (error) {
-      return res.status(401).json({ 
+      res.status(401).json({ 
         message: error instanceof Error ? error.message : 'Invalid token' 
       });
     }
