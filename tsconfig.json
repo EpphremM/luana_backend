@@ -1,25 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "lib": ["ES2022"],
-    "allowJs": true,
+    "target": "es2016",                                 
+    "module": "commonjs",                            
+    "outDir": "./build",                                   
+    "esModuleInterop": true,                          
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,  
+    "strict": false,                                     
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "ES2022",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-  },
-  "exclude": [
-    "node_modules",
-  ],
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node",
+    "moduleResolution": "node",                            
   }
 }
