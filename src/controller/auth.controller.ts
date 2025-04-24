@@ -7,7 +7,6 @@ import {
   decodeToken
 } from '../services/auth.service';
 import { createResponse } from '../express/types/response.body';
-import { NextFunction } from 'grammy';
 
 declare global {
   namespace Express {
