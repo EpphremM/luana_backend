@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import  { Application } from "express";
 import { UserRoutes } from "./routes/user.routes";
 import bodyParser from "body-parser";
 import { AdminRoutes } from "./routes/admin.routes";
@@ -7,6 +7,7 @@ import { CompanyRoutes } from "./routes/company.routes";
 import { CasherRoutes } from "./routes/casher.routes";
 import { GameRoutes } from "./routes/game.routes";
 import { AuthRoutes } from "./routes/auth.routes";
+import express = require("express"); 
 import cors from "cors";
 import { globalErrorHandler } from "./global/global.erro.handler";
 
