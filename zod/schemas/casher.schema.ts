@@ -23,4 +23,10 @@ export const updateCasherSchema = z.object({
   first_name: z.string().min(1).optional(),
   last_name: z.string().min(1).optional(),
   username: z.string().min(4).optional(),
+  phone:z.string().trim().min(9).max(13).refine((value)=>{
+    const regex=/^(09\d{8}|07\d{8}|9\d{8}|7\d{8}|\+2517\d{8}|\+2519\d{8})$/;
+    return regex.test(value);
+},{
+    message:"invalid phone number format"
+}).optional(),
 });

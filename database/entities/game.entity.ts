@@ -32,6 +32,8 @@ export class Game implements GameInterface {
   isFifteen:boolean;
   @Column({ nullable: true })
   admin_price: number;
+  @Column({nullable:true,default:10})
+  deduction_percentage:number;
   @Column({ nullable: true,type:"decimal",precision:30,scale:2 })
   company_comission: number;
   @ManyToOne(() => Casher, casher => casher.game)

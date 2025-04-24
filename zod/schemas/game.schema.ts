@@ -13,7 +13,7 @@ export const gameSchema = z.object({
   total_calls: z.number().int().nonnegative("Total calls must be a non-negative integer"),
   total_player: z.number().int().nonnegative("Total players must be a non-negative integer"),
   winner_cards: winnerCardsSchema.default([]),
-  status: z.nativeEnum(GameStatus),
+  status: z.nativeEnum(GameStatus).optional(),
   is_aggregated: z.boolean().default(false),
   casher: z.string().uuid("Casher ID must be a valid UUID").optional(), 
   created_at: z.date().optional() 

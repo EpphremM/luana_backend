@@ -22,7 +22,8 @@ export class User implements UserInterface {
 
     @Column()
     password: string;
-
+    @Column({nullable:true})
+    phone:string;
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
     @OneToOne(() => Casher,casher=>casher.user)

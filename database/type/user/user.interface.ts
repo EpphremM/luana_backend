@@ -15,6 +15,7 @@ export interface UserInterface{
     total_earning?: number;
     net_earning?: number;
     wallet?:number;
+    phone?:string;
     // casher?:CasherInterface;
     admin?:AdminInterface;
     super_admin?:SuperInterface;
