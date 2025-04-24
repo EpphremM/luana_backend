@@ -1,10 +1,10 @@
 {
   "name": "luana_backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/server.ts",
     "dev": "ts-node server.ts"
   },
   "keywords": [],
