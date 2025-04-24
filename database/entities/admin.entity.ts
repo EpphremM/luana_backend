@@ -11,8 +11,6 @@ export class Admin implements AdminInterface{
 id:string;
 @Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted})
 status: PermissionStatus;
-@Column()
-wallet:number;
 @Column({type:"decimal",precision:30,scale:2})
 total_earning:number
 @Column({type:"decimal",precision:30,scale:2})

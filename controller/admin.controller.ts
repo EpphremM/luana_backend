@@ -112,7 +112,6 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       // Prepare admin updates - ensure we're using the nested admin data if provided
       const adminUpdates = {
         status: adminData.admin?.status ?? existingAdmin.status,
-        wallet: adminData.admin?.wallet ?? Number(existingAdmin.wallet),
         total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
         net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
         package: adminData.admin?.package ?? Number(existingAdmin.package)
@@ -131,7 +130,6 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
   
       // Apply updates - do this carefully field by field
       existingAdmin.status = adminUpdates.status;
-      existingAdmin.wallet = adminUpdates.wallet;
       existingAdmin.total_earning = adminUpdates.total_earning;
       existingAdmin.net_earning = adminUpdates.net_earning;
       existingAdmin.package = adminUpdates.package;
@@ -157,7 +155,6 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
           payload: {
             id: persistedAdmin.id,
             status: persistedAdmin.status,
-            wallet: persistedAdmin.wallet,
             total_earning: persistedAdmin.total_earning,
             net_earning: persistedAdmin.net_earning,
             package: persistedAdmin.package,

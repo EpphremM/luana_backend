@@ -5,7 +5,6 @@ import { PermissionStatus } from "../../database/anum/permission.enum";
 // Define schema for the "admin" section
 const adminDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted),
-  wallet: z.number().positive(),
   total_earning: z.number(), 
   net_earning: z.number(), 
   package: z.number().positive(),
@@ -26,7 +25,6 @@ export const adminSchema = z.object({
 });
 const updateAdminDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted).optional(),
-  wallet: z.number().positive().optional(),
   total_earning: z.number().optional(), 
   net_earning: z.number().optional(), 
   package: z.number().positive().optional(),

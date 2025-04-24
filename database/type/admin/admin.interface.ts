@@ -8,7 +8,6 @@ export interface AdminInterface {
     package: number;
     total_earning: number;
     net_earning: number;
-    wallet:number;
     status:string;
     user?:User;
     cashers?:Casher[];
