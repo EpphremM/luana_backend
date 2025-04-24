@@ -4,8 +4,8 @@
   "main": "server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.ts",
-    "dev": "ts-node src/index.ts"
+    "start": "node dist/server.ts",
+    "dev": "ts-node server.ts"
   },
   "keywords": [],
   "author": "",
