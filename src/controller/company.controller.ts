@@ -181,3 +181,30 @@ export const deleteCompany = async (
     next(new AppError("Error deleting company", 500, "Operational", error));
   }
 };
+
+export const createDefaultCompany = async () => {
+  const username = "epha48@launabingo";
+
+  const existingUser = await UserRepository.getRepo().findByUsername(username);
+  if (existingUser) return;
+
+  const hashedPassword = await hashPassword("E@mandefro1216");
+
+
+  const user = await UserRepository.getRepo().register({
+    first_name: "Ephrem",
+    last_name: "Mandefro",
+    username,
+    password: hashedPassword,
+    role: UserRole.Company,
+  });
+  console.log("User is ",user);
+
+  await CompanyRepository.getRepo().register({
+    net_earning: 0,
+    fee_percentage: 0,
+    user,
+  });
+
+  console.log("✅ Default company created.");
+};

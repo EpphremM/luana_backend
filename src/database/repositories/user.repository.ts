@@ -7,8 +7,9 @@ export class UserRepository{
     static userRepo:UserRepository|null=null;
     private constructor(){}
     async register(userBody:UserInterface){
+        console.log("Hello from registeration of user");
         const user= this.userRepository.create(userBody)
-        console.log(user)
+        // console.log(user)
         return await this.userRepository.save(user);
     }
 

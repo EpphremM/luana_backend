@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import ENV from "../config/env";
+import { createDefaultCompany } from "../controller/company.controller";
 
 export const AppDataSource: DataSource = new DataSource({
   type: "postgres",
@@ -11,16 +12,17 @@ export const AppDataSource: DataSource = new DataSource({
   password: ENV.db_password,
   entities: [__dirname + '/entities/*.entity.{ts,js}',__dirname+"/../payment/entities/**/*.ts"],
   migrations: [__dirname + "/migration/**/*.ts"],
-  synchronize: true,
-  // ssl: { rejectUnauthorized: false }
+  // synchronize: true,
+  ssl: { rejectUnauthorized: false }
 });
 
 
 
-const intializeConnection = () => {
+const intializeConnection =() => {
   try { 
-    AppDataSource.initialize().then(() => {
+    AppDataSource.initialize().then(async() => {
       console.log("Database connected");
+      await createDefaultCompany();
     });
   } catch (error) {
     console.log("database connection error ", error);
