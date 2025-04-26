@@ -21,16 +21,25 @@ class App {
     }
 
     private initializeMiddleware() {
-        // CORS should be one of the first middlewares
         this.app.use(cookieParser());
+        
+        // Enhanced CORS configuration
         this.app.use(cors({
-            origin: ["http://localhost:3001","http://localhost:3002","https://luana-bingo.vercel.app/","https://luana-bingo.vercel.app"],
-                        methods: ["POST", "GET", "PATCH", "DELETE", "OPTIONS"],
-                        credentials:true,
-                        // Added OPTIONS
+            origin: [
+                "http://localhost:3001",
+                "http://localhost:3002",
+                "https://luana-bingo.vercel.app", // Removed trailing slash
+                "https://luana-bingo-git-dev-user-luanabingo.vercel.app" // Add if using preview deployments
+            ],
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            credentials: true,
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+            exposedHeaders: ['Set-Cookie'] // Important for cross-domain cookies
         }));
-
-        // Then other middlewares
+    
+        // Handle preflight requests
+        this.app.options('*', cors());
+        
         this.app.use(bodyParser.json());
         this.app.use(express.json());
     }
