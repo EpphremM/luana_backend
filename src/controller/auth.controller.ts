@@ -20,22 +20,24 @@ declare global {
   }
 }
 
-const setAuthCookies = (res, accessToken: string, refreshToken: string): void => {
+const setAuthCookies = (res:Response, accessToken: string, refreshToken: string): void => {
  
   
   res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: true,
-    sameSite:"None",
-    // domain: '.vercel.app',
+    sameSite:"none",
+    domain: 'https://luana-bingo.vercel.app/',
+    path:"/",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: true,
-    sameSite:"None",
-    // domain: '.vercel.app', 
+    sameSite:"none",
+    path:"/",
+    domain: 'https://luana-bingo.vercel.app/', 
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
