@@ -9,11 +9,11 @@ import { User } from "./user.entity";
 export class Admin implements AdminInterface{
 @PrimaryGeneratedColumn("uuid")
 id:string;
-@Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted})
+@Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted,nullable:true})
 status: PermissionStatus;
 @Column({default:0,type:"decimal",precision:30,scale:2})
 total_earning:number
-@Column({default:0,type:"decimal",precision:30,scale:2})
+@Column({default:0,type:"decimal",precision:30,scale:2,nullable:true})
 net_earning:number
 @Column({default:0,type:"decimal",precision:30,scale:2})
 package:number;
