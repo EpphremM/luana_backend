@@ -11,8 +11,8 @@ constructor(){
 }
 private setRoutes(){
     
-    this.router.route("/").post(requireRole(UserRole.Company), signup);
-    this.router.route("/").get(requireRole([UserRole.Company,UserRole.Casher,UserRole.Admin]),getAdmin);
+    this.router.route("/").post(signup);
+    this.router.route("/").get(getAdmin);
     this.router.route("/:id").get(requireRole([UserRole.Company,UserRole.Casher,UserRole.Admin]),getOne).patch(requireRole([UserRole.Company,UserRole.Admin,UserRole.Casher]),update).delete(requireRole(UserRole.Company),deleteAdmin);
 }
 }
