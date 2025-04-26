@@ -42,6 +42,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     const result = await loginUser(username, password, req);
+    console.log("Login result is",result);
     setAuthCookies(res, result.accessToken, result.refreshToken);
     console.log(result.accessToken);
     
