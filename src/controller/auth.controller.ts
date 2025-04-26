@@ -20,13 +20,13 @@ declare global {
   }
 }
 
-const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
+const setAuthCookies = (res, accessToken: string, refreshToken: string): void => {
  
   
   res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: true,
-    sameSite:"none",
+    sameSite:"None",
     // domain: '.vercel.app',
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
@@ -34,7 +34,7 @@ const setAuthCookies = (res: Response, accessToken: string, refreshToken: string
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: true,
-    sameSite:"none",
+    sameSite:"None",
     // domain: '.vercel.app', 
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
