@@ -11,11 +11,11 @@ export class Admin implements AdminInterface{
 id:string;
 @Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted})
 status: PermissionStatus;
-@Column({type:"decimal",precision:30,scale:2})
+@Column({default:0,type:"decimal",precision:30,scale:2})
 total_earning:number
-@Column({type:"decimal",precision:30,scale:2})
+@Column({default:0,type:"decimal",precision:30,scale:2})
 net_earning:number
-@Column({type:"decimal",precision:30,scale:2})
+@Column({default:0,type:"decimal",precision:30,scale:2})
 package:number;
 @OneToOne(() => User, user => user.admin)
 @JoinColumn()
