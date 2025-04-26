@@ -25,7 +25,7 @@ const intializeConnection =() => {
       await createDefaultCompany();
     });
   } catch (error) {
-    console.log("database connection error ", error);
+    console.log("database connectionn error ", error);
   }
 };
 export default intializeConnection;
