@@ -5,7 +5,7 @@ import { hashPassword } from "../services/hashing.service";
 
 
 export const createDefaultCompany = async () => {
-  const username = "ephaa48@lauanbingo";
+  const username = "ephhaa48@lauanbingo";
 
   const existingUser = await UserRepository.getRepo().findByUsername(username);
   if (existingUser) return; // already created
