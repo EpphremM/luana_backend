@@ -12,8 +12,8 @@ export const AppDataSource: DataSource = new DataSource({
   password: ENV.db_password,
   entities: [__dirname + '/entities/*.entity.{ts,js}',__dirname+"/../payment/entities/**/*.ts"],
   migrations: [__dirname + "/migration/**/*.ts"],
-  synchronize: true,
-  // ssl: { rejectUnauthorized: false }
+  // synchronize: true,
+  ssl: { rejectUnauthorized: false }
 });
 
 
