@@ -35,7 +35,7 @@ class App {
     }
 
     private initializeRoutes() {
-        // ... rest of your route initialization remains the same ...
+        
         const userRoutes = new UserRoutes();
         const adminRoutes = new AdminRoutes();
         const companyRoutes = new CompanyRoutes();

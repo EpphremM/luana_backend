@@ -5,7 +5,6 @@ import { Request } from 'express';
 import { AppDataSource } from '../database/data.source';
 import { User } from '../database/entities/user.entity';
 import { RefreshToken } from '../database/entities/refresh.entity';
-import { Console } from 'console';
 
 const userRepository = AppDataSource.getRepository(User);
 const refreshTokenRepository = AppDataSource.getRepository(RefreshToken);

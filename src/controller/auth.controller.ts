@@ -21,19 +21,19 @@ declare global {
 }
 
 const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
-  // const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production';
   
   res.cookie('access_token', accessToken, {
     httpOnly: true,
-    secure: false,
-    sameSite:"lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: false,
-    sameSite: 'lax',
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
