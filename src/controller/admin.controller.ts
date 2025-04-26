@@ -75,10 +75,10 @@ try{
     if(!admin){
         return next(new AppError("User not found",400,"Operational"))
     }
-    console.log(admin); 
+    // console.log(admin); 
 res.status(200).json(createResponse("success","Admin fetched successfully",admin));
 }catch(error){
-    console.log(error);
+    // console.log(error);
     return next(new AppError("Error occured. please try again",400,"Operationsl"));
 }
   }

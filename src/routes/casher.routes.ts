@@ -14,6 +14,6 @@ constructor(){
 private setRoutes(){
     this.router.route("/").post(requireRole([UserRole.Admin,UserRole.Company]),signup);
     this.router.route("/").get(requireRole([UserRole.Admin,UserRole.Company]),getCashers);
-    this.router.route("/:id").get(requireRole([UserRole.Casher,UserRole.Company,UserRole.Admin]),getOneCasher).patch(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),updateCasher).delete(requireRole([UserRole.Admin,UserRole.Casher]),deleteCasher);
+    this.router.route("/:id").get(getOneCasher).patch(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),updateCasher).delete(requireRole([UserRole.Admin,UserRole.Casher]),deleteCasher);
 }
 }

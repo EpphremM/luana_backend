@@ -18,7 +18,7 @@ export class Game implements GameInterface {
   total_player: number;
   @Column({ type: "jsonb", default: [] })
   winner_cards: number[]
-  @Column({ nullable: true })
+  @Column({ nullable: true, type:"decimal", precision:30, scale:2})
   derash: number
   @Column({ type: "enum", enum: GameStatus, default: GameStatus.Playing })
   status: string;
@@ -30,9 +30,9 @@ export class Game implements GameInterface {
   isCommon:boolean;
   @Column({nullable:true,default:false})
   isFifteen:boolean;
-  @Column({ nullable: true })
+  @Column({ nullable: true, type:"decimal",precision:30, scale:2 })
   admin_price: number;
-  @Column({nullable:true,default:10})
+  @Column({nullable:true,default:10,type:"decimal", precision:30,scale:2})
   deduction_percentage:number;
   @Column({ nullable: true,type:"decimal",precision:30,scale:2 })
   company_comission: number;
