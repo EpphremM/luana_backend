@@ -27,7 +27,7 @@ const setAuthCookies = (res: Response, accessToken: string, refreshToken: string
     httpOnly: true,
     secure: true,
     sameSite:"none",
-    domain: '.vercel.app',
+    // domain: '.vercel.app',
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
@@ -35,7 +35,7 @@ const setAuthCookies = (res: Response, accessToken: string, refreshToken: string
     httpOnly: true,
     secure: true,
     sameSite:"none",
-    domain: '.vercel.app', 
+    // domain: '.vercel.app', 
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
