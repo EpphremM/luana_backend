@@ -12,7 +12,7 @@ constructor(){
 }
 private setRoutes(){
     this.router.route("/").post(signup);
-    this.router.route("/").get(requireRole(UserRole.Company),getCompanies);
-    this.router.route("/:id").get(requireRole([UserRole.Company]),getOneCompany).patch(requireRole(UserRole.Company),updateCompany).delete(requireRole(UserRole.Company),deleteCompany);
+    this.router.route("/").get(getCompanies);
+    this.router.route("/:id").get(getOneCompany).patch(requireRole(UserRole.Company),updateCompany).delete(requireRole(UserRole.Company),deleteCompany);
 }
 }
