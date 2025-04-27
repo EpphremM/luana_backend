@@ -7,9 +7,9 @@ import { Admin } from "./admin.entity";
 export class SuperAdmin implements SuperInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
-    @Column()
+    @Column({default:0})
      net_earning: number;
-     @Column()
+     @Column({default:15})
      fee_percentage:number;
      @OneToMany(()=>Admin,admin=>admin.company)
      admin:Admin[];

@@ -205,7 +205,7 @@ export const createDefaultCompany = async () => {
 
   await CompanyRepository.getRepo().register({
     net_earning: 0,
-    fee_percentage: 0,
+    fee_percentage: 15,
     user,
   });
 

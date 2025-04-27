@@ -22,7 +22,7 @@ export const companySchema = z.object({
 // Update schemas
 const updateCompanyDetailsSchema = z.object({
   net_earning: z.number().positive().optional(),
-  fee_percentage: z.number().min(0).max(100).optional(),
+  fee_percentage: z.number().min(-1).max(100).optional(),
 });
 
 export const updateCompanySchema = z.object({
