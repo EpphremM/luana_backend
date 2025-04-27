@@ -25,7 +25,7 @@ export const signup = async (
       return next(new AppError("Invalid Request", 400, "Operational"));
     }
 
-    const { casher, password, confirm_password, username, first_name, last_name } = req.body;
+    const { casher, password, confirm_password, username, first_name, last_name,phone } = req.body;
 
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
@@ -42,6 +42,7 @@ export const signup = async (
       first_name,
       last_name,
       username,
+      phone,
       password: hashedPassword,
       role: UserRole.Casher
     });
@@ -110,7 +111,8 @@ export const updateCasher = async (
         casher: casherData, 
         first_name, 
         last_name, 
-        username 
+        username,
+        phone
       } = req.body;
   
       // Validate company data if provided
@@ -136,6 +138,7 @@ export const updateCasher = async (
         if (first_name) existingCasher.user.first_name = first_name;
         if (last_name) existingCasher.user.last_name = last_name;
         if (username) existingCasher.user.username = username;
+        if (username) existingCasher.user.phone = username;
       }
   
       // Save the updated company
@@ -152,6 +155,7 @@ export const updateCasher = async (
             first_name: updatedCasher.user?.first_name,
             last_name: updatedCasher.user?.last_name,
             username: updatedCasher.user?.username,
+            phone: updatedCasher.user?.phone,
             updated_at: new Date()
           }
         }

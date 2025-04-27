@@ -22,7 +22,7 @@ export const signup = async (
       return next(new AppError("Invalid Request", 400, "Operational"));
     }
 
-    const { company, password, confirm_password, username, first_name, last_name } = req.body;
+    const { company, password, confirm_password, username, first_name, last_name,phone } = req.body;
 
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
@@ -40,6 +40,7 @@ export const signup = async (
       last_name,
       username,
       password: hashedPassword,
+      phone,
       role: UserRole.Company,
     });
 
@@ -106,7 +107,8 @@ export const updateCompany = async (
         company: companyData, 
         first_name, 
         last_name, 
-        username 
+        username,
+        phone
       } = req.body;
   
       // Validate company data if provided
@@ -152,6 +154,7 @@ export const updateCompany = async (
             first_name: updatedCompany.user?.first_name,
             last_name: updatedCompany.user?.last_name,
             username: updatedCompany.user?.username,
+            phone: updatedCompany.user?.phone,
             updated_at: new Date()
           }
         }

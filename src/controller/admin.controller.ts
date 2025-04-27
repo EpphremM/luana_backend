@@ -18,7 +18,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         return next(new AppError("Invalid Request", 400, "Operational"));
       }
   
-      const { admin, password, confirm_password, username, first_name, last_name, role } = req.body;
+      const { admin, password, confirm_password, username, first_name, last_name,phone } = req.body;
   
       // Check if the passwords match
       if (password !== confirm_password) {
@@ -40,6 +40,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         last_name,
         username,
         password: hashedPassword,
+        phone,
         role: UserRole.Admin,
       });
   
@@ -99,13 +100,14 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       }
   
       // Separate the update data
-      const { password, confirm_password, first_name, last_name, username, ...adminData } = req.body;
+      const { password, confirm_password, first_name, last_name,phone, username, ...adminData } = req.body;
       
       // Prepare user updates
       const userUpdates = {
         first_name,
         last_name,
-        username
+        username,
+        phone
       };
       console.log("Existing admin",existingAdmin);
   
@@ -114,7 +116,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         status: adminData.admin?.status ?? existingAdmin.status,
         total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
         net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
-        package: adminData.admin?.package ?? Number(existingAdmin.package)
+        package: adminData.admin?.package ?? Number(existingAdmin.package),
       };
   
       // Validate admin updates
@@ -139,6 +141,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         if (userUpdates.first_name) existingAdmin.user.first_name = userUpdates.first_name;
         if (userUpdates.last_name) existingAdmin.user.last_name = userUpdates.last_name;
         if (userUpdates.username) existingAdmin.user.username = userUpdates.username;
+        if (userUpdates.phone) existingAdmin.user.phone = userUpdates.phone;
       }
   
       // Save the changes - make sure your repository's saveWithUser method is working
@@ -161,6 +164,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
             first_name: persistedAdmin.user?.first_name,
             last_name: persistedAdmin.user?.last_name,
             username: persistedAdmin.user?.username,
+            phone: persistedAdmin.user?.phone,
             updated_at: new Date()
           }
         }
