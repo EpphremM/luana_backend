@@ -7,6 +7,7 @@ import {
   decodeToken
 } from '../services/auth.service';
 import { createResponse } from '../express/types/response.body';
+import ENV from '../config/env';
 
 declare global {
   namespace Express {
@@ -21,12 +22,12 @@ declare global {
 }
 
 const setAuthCookies = (res:Response, accessToken: string, refreshToken: string): void => {
- 
+ const isProduction=ENV.node_env==="production";
   
   res.cookie('access_token', accessToken, {
     httpOnly: true,
-    secure: true,
-    sameSite:"none",
+    secure: isProduction,
+    sameSite:isProduction?"none":"lax",
     // domain: 'https://luana-bingo.vercel.app/',
     path:"/",
     maxAge: 15 * 60 * 1000, // 15 minutes
@@ -34,8 +35,8 @@ const setAuthCookies = (res:Response, accessToken: string, refreshToken: string)
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite:"none",
+    secure: isProduction,
+    sameSite:isProduction?"none":"lax",
     path:"/",
     // domain: 'https://luana-bingo.vercel.app/', 
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
