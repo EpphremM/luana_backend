@@ -108,7 +108,9 @@ export const updateCompany = async (
         first_name, 
         last_name, 
         username,
-        phone
+        phone,
+        password,
+        confirm_password
       } = req.body;
   
       // Validate company data if provided
@@ -137,6 +139,8 @@ export const updateCompany = async (
         if (first_name) existingCompany.user.first_name = first_name;
         if (last_name) existingCompany.user.last_name = last_name;
         if (username) existingCompany.user.username = username;
+        if (phone) existingCompany.user.phone = phone;
+        if(password) existingCompany.user.password=await hashPassword(password);
       }
   
       // Save the updated company

@@ -98,6 +98,7 @@ export const updateCasher = async (
     next: NextFunction
   ): Promise<void> => {
     try {
+      
       const { id } = req.params;
       const existingCasher = await CasherRepository.getRepo().findById(id);
   
@@ -112,7 +113,9 @@ export const updateCasher = async (
         first_name, 
         last_name, 
         username,
-        phone
+        phone,
+        password,
+        confirm_password
       } = req.body;
   
       // Validate company data if provided
@@ -139,6 +142,8 @@ export const updateCasher = async (
         if (last_name) existingCasher.user.last_name = last_name;
         if (username) existingCasher.user.username = username;
         if (username) existingCasher.user.phone = username;
+        if(phone) existingCasher.user.phone=phone;
+        if(password) existingCasher.user.password=await hashPassword(password);
       }
   
       // Save the updated company
@@ -165,18 +170,6 @@ export const updateCasher = async (
       next(new AppError("Error updating company", 500, "Operational", error));
     }
   };
-  
-
-
-
-
-
-
-
-
-
-
-
   
 export const deleteCasher = async (
   req: Request,

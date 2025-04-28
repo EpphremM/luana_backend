@@ -107,7 +107,8 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         first_name,
         last_name,
         username,
-        phone
+        phone,
+        password
       };
       console.log("Existing admin",existingAdmin);
   
@@ -142,6 +143,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         if (userUpdates.last_name) existingAdmin.user.last_name = userUpdates.last_name;
         if (userUpdates.username) existingAdmin.user.username = userUpdates.username;
         if (userUpdates.phone) existingAdmin.user.phone = userUpdates.phone;
+        if(userUpdates.password) existingAdmin.user.password=await hashPassword(userUpdates.password);
       }
   
       // Save the changes - make sure your repository's saveWithUser method is working

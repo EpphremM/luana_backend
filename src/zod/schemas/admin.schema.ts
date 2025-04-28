@@ -39,7 +39,15 @@ export const updateAdminSchema = z.object({
   phone:z.string().trim().min(9).max(13).refine((value)=>{
     const regex=/^(09\d{8}|07\d{8}|9\d{8}|7\d{8}|\+2517\d{8}|\+2519\d{8})$/;
     return regex.test(value);
+    
 },{
     message:"invalid phone number format"
 }).optional(),
+
+password: z.string().min(8).optional(),
+confirm_password: z.string().optional(),
+})
+.refine((data) => !data.password || data.password === data.confirm_password, {
+message: "Passwords do not match",
+path: ["confirm_password"],
 })

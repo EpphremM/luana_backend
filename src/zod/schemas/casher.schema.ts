@@ -29,4 +29,10 @@ export const updateCasherSchema = z.object({
 },{
     message:"invalid phone number format"
 }).optional(),
-});
+password: z.string().min(8).optional(),
+confirm_password: z.string().optional(),
+})
+.refine((data) => !data.password || data.password === data.confirm_password, {
+message: "Passwords do not match",
+path: ["confirm_password"],
+})
