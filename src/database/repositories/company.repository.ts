@@ -26,7 +26,7 @@ export class CompanyRepository {
     async findById(id: string) {
         const company = await this.companyRepository.findOne({
             where: { id },
-            relations: ["user","admin","admin.cashers","admin.cashers.game"],
+            relations: ["user","admin","admin.cashers","admin.cashers.game","admin.user"],
         });
         return company;
     }
