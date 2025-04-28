@@ -7,7 +7,7 @@ import { Admin } from "./admin.entity";
 export class SuperAdmin implements SuperInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
-    @Column({default:0})
+    @Column({default:0,type:"decimal",precision:30,scale:2})
      net_earning: number;
      @Column({default:15})
      fee_percentage:number;
