@@ -79,14 +79,12 @@ export const refresh = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies['refresh_token'];
-    if (refreshToken) {
-      await logoutUser(refreshToken);
-    }
-
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
-    
-    res.json({ success: true });
+    // if (refreshToken) {
+    //   await logoutUser(refreshToken);
+    // }
+    res.status(200).json({success: true });
   } catch (error) {
     res.status(500).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed',[]));
   }
