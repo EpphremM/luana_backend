@@ -79,8 +79,9 @@ export const refresh = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies['refresh_token'];
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const isProduction=ENV.node_env==="production";
+    res.clearCookie('access_token', { httpOnly: true, secure: isProduction, sameSite:isProduction?"none":"lax" });
+    res.clearCookie('refresh_token', { httpOnly: true, secure: isProduction, sameSite: isProduction?"none":"lax" });
     // if (refreshToken) {
     //   await logoutUser(refreshToken);
     // }
