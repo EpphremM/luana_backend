@@ -11,9 +11,9 @@ export class SuperAdmin implements SuperInterface{
      net_earning: number;
      @Column({default:15})
      fee_percentage:number;
-     @OneToMany(()=>Admin,admin=>admin.company)
+     @OneToMany(()=>Admin,admin=>admin.company,{onDelete:"CASCADE",onUpdate:"CASCADE"})
      admin:Admin[];
-     @OneToOne(()=>User,user=>user.super_admin)
+     @OneToOne(()=>User,user=>user.super_admin,{cascade:true})
      @JoinColumn()
      user?:User
      @CreateDateColumn()

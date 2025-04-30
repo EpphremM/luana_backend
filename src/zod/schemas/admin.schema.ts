@@ -28,6 +28,7 @@ const updateAdminDetailsSchema = z.object({
   total_earning: z.number().optional(), 
   net_earning: z.number().optional(), 
   package: z.number().positive().optional(),
+  fee_percentage: z.number().positive().optional(),
 });
 
 

@@ -118,6 +118,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
         net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
         package: adminData.admin?.package ?? Number(existingAdmin.package),
+        fee_percentage: adminData.admin?.fee_percentage ?? Number(existingAdmin.fee_percentage),
       };
   
       // Validate admin updates
@@ -136,6 +137,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       existingAdmin.total_earning = adminUpdates.total_earning;
       existingAdmin.net_earning = adminUpdates.net_earning;
       existingAdmin.package = adminUpdates.package;
+      existingAdmin.fee_percentage=adminUpdates.fee_percentage;
       
       // Update user fields
       if (existingAdmin.user) {
@@ -163,6 +165,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
             total_earning: persistedAdmin.total_earning,
             net_earning: persistedAdmin.net_earning,
             package: persistedAdmin.package,
+            fee_percentage: persistedAdmin.fee_percentage,
             first_name: persistedAdmin.user?.first_name,
             last_name: persistedAdmin.user?.last_name,
             username: persistedAdmin.user?.username,

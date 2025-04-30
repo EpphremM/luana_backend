@@ -9,6 +9,7 @@ export interface AdminInterface {
     total_earning: number;
     net_earning: number;
     status:string;
+    fee_percentage:number;
     user?:User;
     cashers?:Casher[];
 }

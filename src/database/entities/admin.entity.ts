@@ -17,7 +17,9 @@ total_earning:number
 net_earning:number
 @Column({default:0,type:"decimal",precision:30,scale:2})
 package:number;
-@OneToOne(() => User, user => user.admin)
+@Column({default:15})
+fee_percentage:number
+@OneToOne(() => User, user => user.admin,)
 @JoinColumn()
 user: User;
 @OneToMany(() => Casher, casher => casher.admin)

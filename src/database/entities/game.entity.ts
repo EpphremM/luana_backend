@@ -36,7 +36,7 @@ export class Game implements GameInterface {
   deduction_percentage:number;
   @Column({ nullable: true,type:"decimal",precision:30,scale:2 })
   company_comission: number;
-  @ManyToOne(() => Casher, casher => casher.game)
+  @ManyToOne(() => Casher, casher => casher.game,{cascade:true,onDelete:"CASCADE",onUpdate:"CASCADE"})
   @JoinColumn({ name: "casher_id" })
   casher: Casher;
   @Column()

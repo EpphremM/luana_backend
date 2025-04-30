@@ -10,7 +10,7 @@ export class Casher implements CasherInterface {
     id:string;
     @Column({type:"enum",enum:PermissionStatus,default:PermissionStatus.Pemitted})
     status:string;
-    @ManyToOne(()=>Admin,admin=>admin.cashers)
+    @ManyToOne(()=>Admin,admin=>admin.cashers,{cascade:true,onDelete:"CASCADE",onUpdate:"CASCADE"})
     @JoinColumn({name:"admin_id"})
     admin:Admin;
     @OneToMany(()=>Game,game=>game.casher)

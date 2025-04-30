@@ -26,13 +26,13 @@ export class User implements UserInterface {
     phone:string;
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
-    @OneToOne(() => Casher,casher=>casher.user)
+    @OneToOne(() => Casher,casher=>casher.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     casher?:Casher;
-    @OneToOne(() => Admin, admin => admin.user)
+    @OneToOne(() => Admin, admin => admin.user,{cascade:true})
     admin?: Admin;
-    @OneToMany(() => RefreshToken, (token) => token.user)
+    @OneToMany(() => RefreshToken, (token) => token.user,{onDelete:"CASCADE",onUpdate:'CASCADE'})
     refreshTokens: RefreshToken[];
-    @OneToOne(()=>SuperAdmin,superr=>superr.user)
+    @OneToOne(()=>SuperAdmin,superr=>superr.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     super_admin?:SuperAdmin;
     @CreateDateColumn()
     created_at: Date
