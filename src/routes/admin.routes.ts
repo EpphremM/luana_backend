@@ -13,6 +13,6 @@ private setRoutes(){
     
     this.router.route("/").post(signup);
     this.router.route("/").get(getAdmin);
-    this.router.route("/:id").get(getOne).patch(requireRole([UserRole.Company,UserRole.Admin,UserRole.Casher]),update).delete(requireRole(UserRole.Company),deleteAdmin);
+    this.router.route("/:id").get(getOne).patch(update).delete(requireRole(UserRole.Company),deleteAdmin);
 }
 }
