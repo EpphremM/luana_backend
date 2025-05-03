@@ -10,5 +10,4 @@ export class Cartela implements CartelaInterface{
     name:string;
     @OneToMany(()=>Card,card=>card.cartela)
     cards:Card[]
-
 }
