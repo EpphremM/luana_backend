@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Casher } from "./casher.entity";
 import { SuperAdmin } from "./company.entity";
-import { PermissionStatus } from "../anum/permission.enum";
+import { PermissionStatus } from "../enum/permission.enum";
 import { AdminInterface } from "../type/admin/admin.interface";
 import { User } from "./user.entity";
 

@@ -49,6 +49,22 @@ export const getOneGame = async (req: Request, res: Response, next: NextFunction
         next(new AppError("Error fetching game", 500, "Operational", error));
     }
 };
+export const getGamesByCasherId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      
+        const pagination:PaginationDto=req.query;
+        const {id}=req.params;
+        const game = await GameRepository.getRepo().findGameByCasherId(id,pagination);
+
+        if (!game) {
+            return next(new AppError("Game not found", 404, "Operational"));
+        }
+
+        res.status(200).json(createResponse("success", "Game fetched successfully", game));
+    } catch (error) {
+        next(new AppError("Error fetching game", 500, "Operational", error));
+    }
+};
 
 export const updateGame = async (req: Request, res: Response, next: NextFunction) => {
     try {

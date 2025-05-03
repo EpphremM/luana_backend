@@ -6,7 +6,7 @@ import { CompanyRepository } from "../database/repositories/company.repository";
 import { AppError } from "../express/error/app.error";
 import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
-import { UserRole } from "../database/anum/role.enum";
+import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { CasherInterface } from "../database/type/casher/casher.interface";
 import { casherSchema } from "../zod/schemas/casher.schema";

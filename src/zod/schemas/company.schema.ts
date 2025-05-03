@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PermissionStatus } from "../../database/anum/permission.enum";
+import { PermissionStatus } from "../../database/enum/permission.enum";
 
 // Define schema for the "company" section
 const companyDetailsSchema = z.object({

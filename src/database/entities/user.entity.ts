@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, OneToMany } from "typeorm";
-import { UserRole } from "../anum/role.enum";  // Enum for user roles
+import { UserRole } from "../enum/role.enum";  // Enum for user roles
 import { UserInterface } from "../type/user/user.interface";
 import { Casher } from "./casher.entity";
 import { Admin } from "./admin.entity";

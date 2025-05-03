@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
 import { GameInterface } from "../type/game/game.interface";
-import { GameStatus } from "../anum/game.enum";
+import { GameStatus } from "../enum/game.enum";
 import { User } from "./user.entity";
 import { Casher } from "./casher.entity";
 

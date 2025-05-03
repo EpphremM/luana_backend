@@ -6,7 +6,7 @@ import { AdminRepository } from "../database/repositories/admin.repository";
 import { AppError } from "../express/error/app.error";
 import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
-import { UserRole } from "../database/anum/role.enum";
+import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { error } from "console";
 import { PaginationDto } from "../DTO/pagination.dto";

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { signup, getAdmin, getOne, update, deleteAdmin } from "../controller/admin.controller";
 import { requireRole } from "../utils/role.middleware";
-import { UserRole } from "../database/anum/role.enum";
+import { UserRole } from "../database/enum/role.enum";
 
 export class AdminRoutes{
 public router:Router;

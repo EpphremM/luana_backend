@@ -1,16 +1,15 @@
+import { PaginationDto } from "../../DTO/pagination.dto";
 import { AppError } from "../../express/error/app.error";
 import { AppDataSource } from "../data.source";
 import { Casher } from "../entities/casher.entity";
-import { SuperAdmin } from "../entities/company.entity";
 import { User } from "../entities/user.entity";
 import { CasherInterface } from "../type/casher/casher.interface";
-import { SuperInterface } from "../type/super_admin/super.admin.interface";
 
 
 export class CasherRepository {
     casherRepository = AppDataSource.getRepository<CasherInterface>(Casher);
     static casherRepo: CasherRepository | null = null;
-    
+
     private constructor() { }
 
     createObject(casher) {
@@ -22,17 +21,17 @@ export class CasherRepository {
     }
 
     async find() {
-        return await this.casherRepository.find({ relations: ["user","admin","game"] });
+        return await this.casherRepository.find({ relations: ["user", "admin", "game"] });
     }
 
     async findById(id: string) {
         const casher = await this.casherRepository.findOne({
             where: { id },
-            relations: ["user","game"],
+            relations: ["user", "game"],
         });
         return casher;
     }
- 
+    
     async delete(id: string) {
         return this.casherRepository.delete(id);
     }
@@ -49,7 +48,7 @@ export class CasherRepository {
 
     async saveWithUser(casher): Promise<Casher> {
         const queryRunner = this.casherRepository.manager.connection.createQueryRunner();
-        
+
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
@@ -71,14 +70,14 @@ export class CasherRepository {
 
     async deleteWithUser(casher): Promise<void> {
         const queryRunner = this.casherRepository.manager.connection.createQueryRunner();
-        
+
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
             // First delete the company record
             await queryRunner.manager.delete(Casher, casher.id);
-            
+
             // Then delete the associated user
             if (casher.user) {
                 await queryRunner.manager.delete(User, casher.user.id);

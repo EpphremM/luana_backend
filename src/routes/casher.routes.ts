@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { deleteCasher, getCashers, getOneCasher, signup, updateCasher } from "../controller/casher.controller";
 import { requireRole } from "../utils/role.middleware";
-import { UserRole } from "../database/anum/role.enum";
+import { UserRole } from "../database/enum/role.enum";
 
 
 

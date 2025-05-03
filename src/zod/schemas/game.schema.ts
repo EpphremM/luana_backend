@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GameStatus } from "../../database/anum/game.enum";
+import { GameStatus } from "../../database/enum/game.enum";
 
 
 // Schema for the winner_cards array

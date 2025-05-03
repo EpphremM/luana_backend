@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { deleteCompany, getCompanies, getOneCompany, signup, updateCompany } from "../controller/company.controller";
 import { requireRole } from "../utils/role.middleware";
-import { UserRole } from "../database/anum/role.enum";
+import { UserRole } from "../database/enum/role.enum";
 
 
 export class CompanyRoutes{

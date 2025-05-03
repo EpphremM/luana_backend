@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { generateDeviceFingerprint } from '../services/auth.service';
-import { UserRole } from '../database/anum/role.enum';
+import { UserRole } from '../database/enum/role.enum';
 
 
 

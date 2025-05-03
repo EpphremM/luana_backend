@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PermissionStatus } from "../../database/anum/permission.enum";
+import { PermissionStatus } from "../../database/enum/permission.enum";
 
 const casherDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted),
