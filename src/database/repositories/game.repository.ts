@@ -1,3 +1,4 @@
+import { PaginationDto } from "../../DTO/pagination.dto";
 import { AppDataSource } from "../data.source";
 import { Game } from "../entities/game.entity";
 import { GameInterface } from "../type/game/game.interface";
@@ -9,9 +10,36 @@ private constructor(){}
 async register(game){
     return await this.gameRepository.save(game);
 }
-async find(){
-    return await this.gameRepository.find({relations:[]})
-}
+async find(pagination: PaginationDto) {
+    const { page = 1, limit = 10 } = pagination;
+    const parsedPage = Math.max(1, Number(page));
+    const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit))));
+    const skip = (parsedPage - 1) * parsedLimit;
+  
+    // Create query builder with proper join conditions
+    const query = this.gameRepository.createQueryBuilder('game')
+      .leftJoinAndSelect('game.casher', 'casher')
+    const [games, total] = await query
+      .take(Number(parsedLimit))
+      .skip(skip)
+      .getManyAndCount();
+  
+    // Calculate total pages
+    const totalPages = Math.ceil(total / parsedLimit);
+  
+    return {
+      data: games,
+      pagination: {
+        totalItems: total,
+        itemCount: games.length,
+        itemsPerPage: parsedLimit,
+        totalPages,
+        currentPage: parsedPage,
+        hasNextPage: parsedPage < totalPages,
+        hasPreviousPage: parsedPage > 1,
+      }
+    };
+  }
 async findById(id:string){
     return await this.gameRepository.findOne({where:{id},relations:[]})
 }

@@ -9,6 +9,7 @@ import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/anum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { error } from "console";
+import { PaginationDto } from "../DTO/pagination.dto";
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validationStatus = await validateInput<AdminInterface>(adminSchema, req.body);
@@ -59,7 +60,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   };
   export const getAdmin = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const admins = await  AdminRepository.getRepo().find();
+      const pagination:PaginationDto=req.query as unknown as PaginationDto;
+      const admins = await  AdminRepository.getRepo().find(pagination);
 
       res.status(200).json(createResponse("success","Admins fetched successfully",admins));
     } catch (error) {

@@ -6,6 +6,7 @@ import { GameRepository } from "../database/repositories/game.repository";
 import { AppError } from "../express/error/app.error";
 import { createResponse } from "../express/types/response.body";
 import { GameInterface } from "../database/type/game/game.interface";
+import { PaginationDto } from "../DTO/pagination.dto";
 
 export const createGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -17,7 +18,7 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
         }
 
         const newGame = await GameRepository.getRepo().register(req.body);
-        
+
         res.status(201).json(createResponse("success", "Game created successfully", newGame));
     } catch (error) {
         next(new AppError("Error creating game", 500, "Operational", error));
@@ -26,7 +27,8 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
 
 export const getAllGames = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const games = await GameRepository.getRepo().find();
+        const paginationDto:PaginationDto=req.query;
+        const games = await GameRepository.getRepo().find(paginationDto);
         res.status(200).json(createResponse("success", "Games fetched successfully", games));
     } catch (error) {
         next(new AppError("Error fetching games", 500, "Operational", error));
@@ -51,7 +53,7 @@ export const getOneGame = async (req: Request, res: Response, next: NextFunction
 export const updateGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        
+
         const validationStatus = await validateInput<Partial<GameInterface>>(updateGameSchema, req.body);
         if (validationStatus.status !== "success") {
             return next(new AppError("Invalid update data", 400));
@@ -63,7 +65,7 @@ export const updateGame = async (req: Request, res: Response, next: NextFunction
         }
 
         const updatedGame = await GameRepository.getRepo().update(existingGame, req.body);
-        
+
         res.status(200).json(createResponse("success", "Game updated successfully", updatedGame));
     } catch (error) {
         next(new AppError("Error updating game", 500, "Operational", error));
@@ -80,7 +82,7 @@ export const deleteGame = async (req: Request, res: Response, next: NextFunction
         }
 
         await GameRepository.getRepo().delete(id);
-        
+
         res.status(200).json(createResponse("success", "Game deleted successfully", null));
     } catch (error) {
         next(new AppError("Error deleting game", 500, "Operational", error));
