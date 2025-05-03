@@ -6,8 +6,10 @@ import { Cartela } from "./cartela.entity";
 export class Card implements CardInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
-    @Column()
+    @Column("int",{array:true})
     cards:number[]
+    @Column()
+    number:number;
     @ManyToOne(()=>Cartela,cartela=>cartela.cards)
     @JoinColumn({name:"cartela_id"})
     cartela:Cartela

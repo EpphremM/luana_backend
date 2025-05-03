@@ -129,14 +129,9 @@ export const updateCasher = async (
           });
           return;
         }
-  
-        // Update company fields
         if (casherData.status !== undefined) {
           existingCasher.status = casherData.status;
         }
-  
-  
-      // Update user fields if provided
       if (existingCasher.user) {
         if (first_name) existingCasher.user.first_name = first_name;
         if (last_name) existingCasher.user.last_name = last_name;
