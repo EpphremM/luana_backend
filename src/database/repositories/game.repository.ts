@@ -15,7 +15,7 @@ async findGameByCasherId(casher_id: string, pagination: PaginationDto) {
         // const casher= await CasherRepository.getRepo().findById(casher_id);
 
         const { page = 1, limit = 10 } = pagination;
-        const query = await this.gameRepository.createQueryBuilder('game').where({ casher_id: casher_id });
+        const query = this.gameRepository.createQueryBuilder('game').where({ casher_id: casher_id });
 
         // return casher.game;
         const parsedPage = Math.max(1, Number(page));

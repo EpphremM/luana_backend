@@ -16,10 +16,10 @@ export class CartelaRepository{
         return  this.cartelaRepository.create(cartela)
     }
  async find() {
-        return await this.cartelaRepository.find({relations:[]});
+        return await this.cartelaRepository.find({relations:["cards"]});
     }
     async findById(id:string){
-return await this.cartelaRepository.find({where:{id},relations:[]});
+return await this.cartelaRepository.find({where:{id},relations:["cards"]});
     }
     async findByname(name:string){
         return await this.cartelaRepository.findOne({where:{name}})

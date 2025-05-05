@@ -9,6 +9,8 @@ import { GameRoutes } from "./routes/game.routes";
 import { AuthRoutes } from "./routes/auth.routes";
 import cors from "cors";
 import { globalErrorHandler } from "./global/global.erro.handler";
+import { CartelaRoutes } from "./routes/cartela.routes";
+import { CardRoutes } from "./routes/card.routes";
 
 class App {
     public app: Application;
@@ -38,7 +40,7 @@ class App {
         }));
     
         // Handle preflight requests
-        this.app.options('/{*any}', cors());
+        this.app.options('{*}', cors());
         
         this.app.use(bodyParser.json());
         this.app.use(express.json());
@@ -52,13 +54,17 @@ class App {
         const casherRoutes = new CasherRoutes();
         const gameRoutes = new GameRoutes();
         const authRoutes = new AuthRoutes();
+        const cardRoutes=new CardRoutes();
+        const cartelaRoutes=new CartelaRoutes();
         
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
         this.app.use("/bingo/v1/company", companyRoutes.router);
         this.app.use("/bingo/v1/casher", casherRoutes.router);
         this.app.use("/bingo/v1/game", gameRoutes.router);
+        this.app.use("/bingo/v1/card", cardRoutes.router);
         this.app.use("/bingo/v1", authRoutes.router);
+        this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
         
         this.app.use(globalErrorHandler);
     }

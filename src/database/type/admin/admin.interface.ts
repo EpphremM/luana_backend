@@ -12,4 +12,5 @@ export interface AdminInterface {
     fee_percentage:number;
     user?:User;
     cashers?:Casher[];
+    cartela_id:string;
 }

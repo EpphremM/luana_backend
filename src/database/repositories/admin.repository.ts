@@ -28,7 +28,9 @@ export class AdminRepository {
     const query = this.adminRepository.createQueryBuilder('admin')
       .leftJoinAndSelect('admin.cashers', 'casher')
       .leftJoinAndSelect('admin.company', 'company')
-      .leftJoinAndSelect('admin.user', 'user');
+      .leftJoinAndSelect('admin.user', 'user')
+      .leftJoinAndSelect('admin.cartela', 'cartela')
+      // .leftJoinAndSelect('admin.cartela.cards', 'card');
     const [admins, total] = await query
       .take(Number(parsedLimit))
       .skip(skip)
@@ -53,7 +55,7 @@ export class AdminRepository {
   async findById(id: string) {
     const admin = await this.adminRepository.findOne({
       where: { id },
-      relations: ["user", "cashers", "cashers.user", "company", "cashers.game"],
+      relations: ["user", "cashers", "cashers.user", "company", "cashers.game","cartela","cartela.cards"],
     });
     return admin;
   }

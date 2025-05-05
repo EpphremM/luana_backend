@@ -121,6 +121,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
         net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
         package: adminData.admin?.package ?? Number(existingAdmin.package),
         fee_percentage: adminData.admin?.fee_percentage ?? Number(existingAdmin.fee_percentage),
+        cartela_id:adminData.admin?.cartela_id??existingAdmin.cartela_id
       };
   
       // Validate admin updates
@@ -140,6 +141,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       existingAdmin.net_earning = adminUpdates.net_earning;
       existingAdmin.package = adminUpdates.package;
       existingAdmin.fee_percentage=adminUpdates.fee_percentage;
+      existingAdmin.cartela_id=adminUpdates.cartela_id;
       
       // Update user fields
       if (existingAdmin.user) {
@@ -172,6 +174,7 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
             last_name: persistedAdmin.user?.last_name,
             username: persistedAdmin.user?.username,
             phone: persistedAdmin.user?.phone,
+            cartela_id: persistedAdmin.cartela_id,
             updated_at: new Date()
           }
         }
@@ -194,7 +197,8 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       const admin = await AdminRepository.getRepo().findById(id);
   
       if (!admin) {
-         res.status(404).json(createResponse("fail","Admin not found",[]));
+          res.status(404).json(createResponse("fail","Admin not found",[]));
+          return;
       }
   
       // 2. Delete using repository method
