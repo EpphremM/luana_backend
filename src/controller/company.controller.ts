@@ -240,25 +240,30 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
       games.reduce((total, game) => total + parseFloat(game.company_comission), 0);
 
     // Prepare metrics
-    const metrics = {
-      netEarning: company.net_earning,
-      totalAdmins: company.admin.length,
-      totalCashers: company.admin.reduce((sum, admin) => sum + admin.cashers.length, 0),
-      totalGames: allCompletedGames.length,
-      earnings: {
+
+   
+     const earnings= {
+      createdAt:company.user.created_at,
+      feePercentage:company.fee_percentage,
+        netEarning: company.net_earning,
+        totalAdmins: company.admin.length,
+        totalCashers: company.admin.reduce((sum, admin) => sum + admin.cashers.length, 0),
+        totalGames: allCompletedGames.length,
+        first_name: company.user.first_name,
+        last_name: company.user.last_name,
+        username: company.user.username,
         today: calculateEarnings(filterByDate(allCompletedGames, todayStart)),
         thisWeek: calculateEarnings(filterByDate(allCompletedGames, weekStart)),
         thisMonth: calculateEarnings(filterByDate(allCompletedGames, monthStart)),
         thisYear: calculateEarnings(filterByDate(allCompletedGames, yearStart)),
         allTime: calculateEarnings(allCompletedGames)
       }
-    };
 
-    res.status(200).json({
-      status: "success",
-      message: "Company metrics calculated successfully",
-      data: metrics
-    });
+    res.status(200).json(createResponse(
+      "success",
+      "Company metrics calculated successfully",
+      earnings
+    ));
 
   } catch (error) {
     console.log("Error calculating company earnings:", error);

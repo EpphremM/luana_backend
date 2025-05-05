@@ -7,6 +7,10 @@ import { AppError } from "../express/error/app.error";
 import { createResponse } from "../express/types/response.body";
 import { GameInterface } from "../database/type/game/game.interface";
 import { PaginationDto } from "../DTO/pagination.dto";
+import { error } from "console";
+import { AdminRepository } from "../database/repositories/admin.repository";
+import { CompanyRepository } from "../database/repositories/company.repository";
+import { CasherRepository } from "../database/repositories/casher.repository";
 
 export const createGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -104,3 +108,37 @@ export const deleteGame = async (req: Request, res: Response, next: NextFunction
         next(new AppError("Error deleting game", 500, "Operational", error));
     }
 };
+
+
+
+const getCompanyIncomes=async(company_id:string)=>{
+    try{
+const compoanyIncomes=await CompanyRepository.getRepo().findById(company_id);
+return{
+    
+}
+
+    }catch(error){
+        console.log(error);
+    }
+}
+const updateCompanyIncomes=async(casher_id:string,new_net_earning:number)=>{
+    try{
+const casher=await CasherRepository.getRepo().findById(casher_id);
+const admin_id=casher.admin.id;
+const company_id=casher.admin.company.id;
+
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export const updateGameEarningStatus=async(req:Request,res:Response,next:NextFunction)=>{
+    try{
+        const {id}=req.params;
+
+    }catch(error){
+        console.log(error);
+        next(new AppError("Error occured duting updating earnings",400,"Operation",error))
+    }
+}

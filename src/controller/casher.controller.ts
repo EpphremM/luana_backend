@@ -211,13 +211,17 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
         total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
       0);
     const earnings = {
-      package:cashier.admin.package,
+      first_name:cashier.user.first_name,
+      last_name:cashier.user.last_name,
+      status:cashier.status,
+      games:cashier?.game,
+      package:cashier?.admin?.package,
       today: calculateEarnings(filterByDate(completedGames, todayStart)),
       thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
       thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
       thisYear: calculateEarnings(filterByDate(completedGames, yearStart)),
       allTime: calculateEarnings(completedGames)
-    };
+    }; 
 
     res.status(200).json({
       status: "success",

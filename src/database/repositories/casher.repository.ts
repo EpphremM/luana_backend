@@ -21,13 +21,13 @@ export class CasherRepository {
     }
 
     async find() {
-        return await this.casherRepository.find({ relations: ["user", "admin", "game"] });
+        return await this.casherRepository.find({ relations: ["user", "admin", "game","admin.company"] });
     }
 
     async findById(id: string) {
         const casher = await this.casherRepository.findOne({
             where: { id },
-            relations: ["user", "game","admin"],
+            relations: ["user", "game","admin","admin.company"],
         });
         return casher;
     }
