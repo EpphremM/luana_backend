@@ -27,7 +27,7 @@ export class CasherRepository {
     async findById(id: string) {
         const casher = await this.casherRepository.findOne({
             where: { id },
-            relations: ["user", "game"],
+            relations: ["user", "game","admin"],
         });
         return casher;
     }

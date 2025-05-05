@@ -211,6 +211,7 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
         total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
       0);
     const earnings = {
+      package:cashier.admin.package,
       today: calculateEarnings(filterByDate(completedGames, todayStart)),
       thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
       thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
