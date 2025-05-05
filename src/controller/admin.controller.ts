@@ -211,3 +211,44 @@ res.status(200).json(createResponse("success","Admin fetched successfully",admin
       next(new AppError("Error deleting admin", 500, "Operational", error));
     }
   };
+
+  export const AdminEarnings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const admin = await AdminRepository.getRepo().findById(id);
+        
+        if (!admin) {
+            return next(new AppError("Admin not found", 400, "Operational"));
+        }
+
+        const allGames = admin.cashers.flatMap(casher => 
+            casher.game.filter(game => game.status === "completed")
+        );
+        const now = new Date();
+        const todayStart = new Date(now.setHours(0, 0, 0, 0));
+        const weekStart = new Date(new Date().setDate(todayStart.getDate() - todayStart.getDay())); // Sunday start
+        const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+        const yearStart = new Date(todayStart.getFullYear(), 0, 1);
+        const filterByDate = (games: any[], startDate: Date) => 
+            games.filter(game => new Date(game.created_at) >= startDate);
+
+        const calculateEarnings = (games: any[]) => 
+            games.reduce((total, game) => 
+                total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
+            0);
+
+        const earnings = {
+            today: calculateEarnings(filterByDate(allGames, todayStart)),
+            thisWeek: calculateEarnings(filterByDate(allGames, weekStart)),
+            thisMonth: calculateEarnings(filterByDate(allGames, monthStart)),
+            thisYear: calculateEarnings(filterByDate(allGames, yearStart)),
+            allTime: calculateEarnings(allGames)
+        };
+
+        res.status(200).json(createResponse("success", "Admin earnings fetched successfully", earnings));
+
+    } catch (error) {
+        console.log("Error: ", error);
+        next(new AppError("Failed to fetch earnings", 500, "Operational"));
+    }
+};

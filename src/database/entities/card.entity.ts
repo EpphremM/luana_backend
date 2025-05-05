@@ -8,7 +8,7 @@ export class Card implements CardInterface {
     id: string;
     @Column("int", { array: true })
     cards: number[]
-    @Column({unique:true})
+    @Column()
     number: number;
     @ManyToOne(() => Cartela, cartela => cartela.cards)
     @JoinColumn({ name: "cartela_id" })

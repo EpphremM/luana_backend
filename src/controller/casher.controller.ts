@@ -186,3 +186,46 @@ export const deleteCasher = async (
     next(new AppError("Error deleting casher", 500, "Operational", error));
   }
 };
+
+export const cashierEarnings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const cashier = await CasherRepository.getRepo().findById(id);
+    
+    if (!cashier) {
+      return next(new AppError("Cashier not found", 400, "Operational"));
+    }
+
+    const completedGames = cashier.game.filter(game => game.status === "completed");
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart);
+    weekStart.setDate(todayStart.getDate() - todayStart.getDay());
+    const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+    const yearStart = new Date(todayStart.getFullYear(), 0, 1);
+    const filterByDate = (games: any[], startDate: Date) => 
+      games.filter(game => new Date(game.created_at) >= startDate);
+
+    const calculateEarnings = (games: any[]) => 
+      games.reduce((total, game) => 
+        total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
+      0);
+    const earnings = {
+      today: calculateEarnings(filterByDate(completedGames, todayStart)),
+      thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
+      thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
+      thisYear: calculateEarnings(filterByDate(completedGames, yearStart)),
+      allTime: calculateEarnings(completedGames)
+    };
+
+    res.status(200).json({
+      status: "success",
+      message: "Cashier earnings calculated successfully",
+      data: earnings
+    });
+
+  } catch (error) {
+    console.log("Error calculating cashier earnings:", error);
+    next(new AppError("Failed to calculate cashier earnings", 500, "Operational"));
+  }
+};

@@ -1,3 +1,4 @@
+import { Admin } from "../../entities/admin.entity";
 import { Casher } from "../../entities/casher.entity";
 
 export class GameInterface{

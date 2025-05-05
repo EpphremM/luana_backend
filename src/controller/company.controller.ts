@@ -18,11 +18,11 @@ export const signup = async (
     const validationStatus = await validateInput<SuperInterface>(companySchema, req.body);
 
     if (validationStatus.status !== "success") {
-        console.log(validationStatus);
+      console.log(validationStatus);
       return next(new AppError("Invalid Request", 400, "Operational"));
     }
 
-    const { company, password, confirm_password, username, first_name, last_name,phone } = req.body;
+    const { company, password, confirm_password, username, first_name, last_name, phone } = req.body;
 
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
@@ -77,11 +77,11 @@ export const getOneCompany = async (
   try {
     const { id } = req.params;
     const company = await CompanyRepository.getRepo().findById(id);
-    
+
     if (!company) {
       return next(new AppError("Company not found", 404, "Operational"));
     }
-    
+
     res.status(200).json(createResponse("success", "Company fetched successfully", company));
   } catch (error) {
     next(new AppError("Error occurred. Please try again.", 400, "Operational"));
@@ -89,85 +89,85 @@ export const getOneCompany = async (
 };
 
 export const updateCompany = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const existingCompany = await CompanyRepository.getRepo().findById(id);
-  
-      if (!existingCompany) {
-        res.status(404).json(createResponse("error", "Company not found", []));
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const existingCompany = await CompanyRepository.getRepo().findById(id);
+
+    if (!existingCompany) {
+      res.status(404).json(createResponse("error", "Company not found", []));
+      return;
+    }
+
+    // Destructure request body
+    const {
+      company: companyData,
+      first_name,
+      last_name,
+      username,
+      phone,
+      password,
+      confirm_password
+    } = req.body;
+
+    // Validate company data if provided
+    if (companyData) {
+      const validation = await validateInput(updateCompanySchema, { company: companyData });
+      if (validation.status !== "success") {
+        res.status(400).json({
+          status: "fail",
+          message: "Validation error",
+          errors: validation.errors,
+        });
         return;
       }
-  
-      // Destructure request body
-      const { 
-        company: companyData, 
-        first_name, 
-        last_name, 
-        username,
-        phone,
-        password,
-        confirm_password
-      } = req.body;
-  
-      // Validate company data if provided
-      if (companyData) {
-        const validation = await validateInput(updateCompanySchema, { company: companyData });
-        if (validation.status !== "success") {
-          res.status(400).json({
-            status: "fail",
-            message: "Validation error",
-            errors: validation.errors,
-          });
-          return;
-        }
-  
-        // Update company fields
-        if (companyData.net_earning !== undefined) {
-          existingCompany.net_earning = companyData.net_earning;
-        }
-        if (companyData.fee_percentage !== undefined) {
-          existingCompany.fee_percentage = companyData.fee_percentage;
-        }
+
+      // Update company fields
+      if (companyData.net_earning !== undefined) {
+        existingCompany.net_earning = companyData.net_earning;
       }
-  
-      // Update user fields if provided
-      if (existingCompany.user) {
-        if (first_name) existingCompany.user.first_name = first_name;
-        if (last_name) existingCompany.user.last_name = last_name;
-        if (username) existingCompany.user.username = username;
-        if (phone) existingCompany.user.phone = phone;
-        if(password) existingCompany.user.password=await hashPassword(password);
+      if (companyData.fee_percentage !== undefined) {
+        existingCompany.fee_percentage = companyData.fee_percentage;
       }
-  
-      // Save the updated company
-      const updatedCompany = await CompanyRepository.getRepo().saveWithUser(existingCompany);
-  
-      // Return response
-      res.status(200).json({
-        status: "success",
-        message: "Company updated successfully",
-        data: {
-          payload: {
-            id: updatedCompany.id,
-            net_earning: updatedCompany.net_earning,
-            fee_percentage: updatedCompany.fee_percentage,
-            first_name: updatedCompany.user?.first_name,
-            last_name: updatedCompany.user?.last_name,
-            username: updatedCompany.user?.username,
-            phone: updatedCompany.user?.phone,
-            updated_at: new Date()
-          }
-        }
-      });
-  
-    } catch (error) {
-      next(new AppError("Error updating company", 500, "Operational", error));
     }
-  };
+
+    // Update user fields if provided
+    if (existingCompany.user) {
+      if (first_name) existingCompany.user.first_name = first_name;
+      if (last_name) existingCompany.user.last_name = last_name;
+      if (username) existingCompany.user.username = username;
+      if (phone) existingCompany.user.phone = phone;
+      if (password) existingCompany.user.password = await hashPassword(password);
+    }
+
+    // Save the updated company
+    const updatedCompany = await CompanyRepository.getRepo().saveWithUser(existingCompany);
+
+    // Return response
+    res.status(200).json({
+      status: "success",
+      message: "Company updated successfully",
+      data: {
+        payload: {
+          id: updatedCompany.id,
+          net_earning: updatedCompany.net_earning,
+          fee_percentage: updatedCompany.fee_percentage,
+          first_name: updatedCompany.user?.first_name,
+          last_name: updatedCompany.user?.last_name,
+          username: updatedCompany.user?.username,
+          phone: updatedCompany.user?.phone,
+          updated_at: new Date()
+        }
+      }
+    });
+
+  } catch (error) {
+    next(new AppError("Error updating company", 500, "Operational", error));
+  }
+};
 export const deleteCompany = async (
   req: Request,
   res: Response,
@@ -205,7 +205,7 @@ export const createDefaultCompany = async () => {
     password: hashedPassword,
     role: UserRole.Company,
   });
-  console.log("User is ",user);
+  console.log("User is ", user);
 
   await CompanyRepository.getRepo().register({
     net_earning: 0,
@@ -214,4 +214,54 @@ export const createDefaultCompany = async () => {
   });
 
   console.log("✅ Default company created.");
+};
+export const companyEarnings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const company = await CompanyRepository.getRepo().findById(id);
+
+    if (!company) {
+      return next(new AppError("Company not found", 404, "Operational"));
+    }
+    const allCompletedGames = company.admin.flatMap(admin =>
+      admin.cashers.flatMap(casher =>
+        casher.game.filter(game => game.status === "completed")
+      )
+    );
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart);
+    weekStart.setDate(todayStart.getDate() - todayStart.getDay()); // Sunday start
+    const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+    const yearStart = new Date(todayStart.getFullYear(), 0, 1);
+    const filterByDate = (games: any[], startDate: Date) =>
+      games.filter(game => new Date(game.created_at) >= startDate);
+    const calculateEarnings = (games: any[]) =>
+      games.reduce((total, game) => total + parseFloat(game.company_comission), 0);
+
+    // Prepare metrics
+    const metrics = {
+      netEarning: company.net_earning,
+      totalAdmins: company.admin.length,
+      totalCashers: company.admin.reduce((sum, admin) => sum + admin.cashers.length, 0),
+      totalGames: allCompletedGames.length,
+      earnings: {
+        today: calculateEarnings(filterByDate(allCompletedGames, todayStart)),
+        thisWeek: calculateEarnings(filterByDate(allCompletedGames, weekStart)),
+        thisMonth: calculateEarnings(filterByDate(allCompletedGames, monthStart)),
+        thisYear: calculateEarnings(filterByDate(allCompletedGames, yearStart)),
+        allTime: calculateEarnings(allCompletedGames)
+      }
+    };
+
+    res.status(200).json({
+      status: "success",
+      message: "Company metrics calculated successfully",
+      data: metrics
+    });
+
+  } catch (error) {
+    console.log("Error calculating company earnings:", error);
+    next(new AppError("Failed to calculate company metrics", 500, "Operational", error));
+  }
 };

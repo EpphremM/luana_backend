@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteCasher, getCashers, getOneCasher, signup, updateCasher } from "../controller/casher.controller";
+import { cashierEarnings, deleteCasher, getCashers, getOneCasher, signup, updateCasher } from "../controller/casher.controller";
 import { requireRole } from "../utils/role.middleware";
 import { UserRole } from "../database/enum/role.enum";
 
@@ -14,6 +14,7 @@ constructor(){
 private setRoutes(){
     this.router.route("/").post(signup);
     this.router.route("/").get(getCashers);
+    this.router.route("/earnings/:id").get(cashierEarnings);
     this.router.route("/:id").get(getOneCasher).patch(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),updateCasher).delete(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),deleteCasher);
 }
 }

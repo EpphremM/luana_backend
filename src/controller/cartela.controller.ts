@@ -23,6 +23,7 @@ if(existingCartela){
   return;
 }
 const cartelas=await CartelaRepository.getRepo().register(body);
+console.log("Cartela created successfully",cartelas);
 
      res.status(200).json(createResponse("success","cartela created successfully",cartelas))
      return;
@@ -49,7 +50,7 @@ if(result){
 
 export const getOne=async(req:Request,res:Response,next:NextFunction)=>{
     try{
-const {id}=req.body;
+const {id}=req.params;
 const exisitngCartela=await CartelaRepository.getRepo().findById(id);
 if(!exisitngCartela){
     return next(new AppError("There is no cartela with this id",404,"Operational"))

@@ -15,10 +15,10 @@ export const register = async (req: Request, res: Response, next: NextFunction):
             console.log(validationStatus);
             return next(new AppError("Invalid Request", 400, "Operational"));
         }
-        const existingCard = await CardRepository.getRepo().findBynumber(body.number);
-        if (existingCard.length!==0) {
-            return next(new AppError("Card already registered", 400, "OperationalError"));
-        }
+        // const existingCard = await CardRepository.getRepo().findBynumber(body.number);
+        // if (existingCard.length!==0) {
+        //     return next(new AppError("Card already registered", 400, "OperationalError"));
+        // }
         
         const card = await CardRepository.getRepo().register(body);
         
@@ -76,7 +76,7 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
     try {
         const body: CardInterface = req.body;
         const validationStatus = await validateInput<CardInterface>(UpdateCardSchema, req.body);
-        const {id}=req.body;
+        const {id}=req.params;
         if (validationStatus.status !== "success") {
             console.log(validationStatus);
             return next(new AppError("Invalid Request", 400, "Operational"));
@@ -85,10 +85,10 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
         if(!card){
             return next(new AppError("Card not found", 404, "Operational"));
         }
-        const existingCard = await CardRepository.getRepo().findBynumber(body.number);
-        if (existingCard) {
-            return next(new AppError("User already registered", 400, "OperationalError"));
-        }
+        // const existingCard = await CardRepository.getRepo().findBynumber(body.number);
+        // if (existingCard) {
+        //     return next(new AppError("User already registered", 400, "OperationalError"));
+        // }
         
         const updatedCard = await CardRepository.getRepo().update(id,body);
       
@@ -97,6 +97,6 @@ export const update = async (req: Request, res: Response, next: NextFunction): P
 
     } catch (error) {
         console.log(error);
-        next(new AppError("Cartela registration error", 400, "Operational", error))
+        next(new AppError("Cartela updation error", 400, "Operational", error))
     }
 }

@@ -20,7 +20,7 @@ export class CompanyRepository {
     }
 
     async find() {
-        return await this.companyRepository.find({ relations: ["user"] });
+        return await this.companyRepository.find({ relations: ["user","admin","admin.cashers","admin.cashers.game"] });
     }
 
     async findById(id: string) {
@@ -74,10 +74,8 @@ export class CompanyRepository {
         await queryRunner.startTransaction();
 
         try {
-            // First delete the company record
             await queryRunner.manager.delete(SuperAdmin, company.id);
             
-            // Then delete the associated user
             if (company.user) {
                 await queryRunner.manager.delete(User, company.user.id);
             }
