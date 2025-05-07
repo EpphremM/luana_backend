@@ -237,27 +237,27 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
     const filterByDate = (games: any[], startDate: Date) =>
       games.filter(game => new Date(game.created_at) >= startDate);
     const calculateEarnings = (games: any[]) =>
-      games.reduce((total, game) => total + parseFloat(game.company_comission), 0);
+      games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
 
     // Prepare metrics
 
-   
-     const earnings= {
-      createdAt:company.user.created_at,
-      feePercentage:company.fee_percentage,
-        netEarning: company.net_earning,
-        totalAdmins: company.admin.length,
-        totalCashers: company.admin.reduce((sum, admin) => sum + admin.cashers.length, 0),
-        totalGames: allCompletedGames.length,
-        first_name: company.user.first_name,
-        last_name: company.user.last_name,
-        username: company.user.username,
-        today: calculateEarnings(filterByDate(allCompletedGames, todayStart)),
-        thisWeek: calculateEarnings(filterByDate(allCompletedGames, weekStart)),
-        thisMonth: calculateEarnings(filterByDate(allCompletedGames, monthStart)),
-        thisYear: calculateEarnings(filterByDate(allCompletedGames, yearStart)),
-        allTime: calculateEarnings(allCompletedGames)
-      }
+
+    const earnings = {
+      createdAt: company.user.created_at,
+      feePercentage: company.fee_percentage,
+      netEarning: company.net_earning,
+      totalAdmins: company.admin.length,
+      totalCashers: company.admin.reduce((sum, admin) => sum + admin.cashers.length, 0),
+      totalGames: allCompletedGames.length,
+      first_name: company.user.first_name,
+      last_name: company.user.last_name,
+      username: company.user.username,
+      today: calculateEarnings(filterByDate(allCompletedGames, todayStart)),
+      thisWeek: calculateEarnings(filterByDate(allCompletedGames, weekStart)),
+      thisMonth: calculateEarnings(filterByDate(allCompletedGames, monthStart)),
+      thisYear: calculateEarnings(filterByDate(allCompletedGames, yearStart)),
+      allTime: calculateEarnings(allCompletedGames)
+    }
 
     res.status(200).json(createResponse(
       "success",
