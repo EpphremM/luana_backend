@@ -23,20 +23,15 @@ export class AdminRepository {
     const parsedPage = Math.max(1, Number(page));
     const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit)))); // Enforce reasonable limits
     const skip = (parsedPage - 1) * parsedLimit;
-  
-    // Create query builder with proper join conditions
-    const query = this.adminRepository.createQueryBuilder('admin')
+      const query = this.adminRepository.createQueryBuilder('admin')
       .leftJoinAndSelect('admin.cashers', 'casher')
       .leftJoinAndSelect('admin.company', 'company')
       .leftJoinAndSelect('admin.user', 'user')
       .leftJoinAndSelect('admin.cartela', 'cartela')
-      // .leftJoinAndSelect('admin.cartela.cards', 'card');
     const [admins, total] = await query
       .take(Number(parsedLimit))
       .skip(skip)
       .getManyAndCount();
-  
-    // Calculate total pages
     const totalPages = Math.ceil(total / parsedLimit);
   
     return {
@@ -63,7 +58,7 @@ export class AdminRepository {
   async Delete(id: string) {
     return this.adminRepository.delete(id);
   }
-  async update(admin: Admin, updateData: Partial<UserInterface>): Promise<Admin> {
+  async update(admin, updateData: Partial<UserInterface>): Promise<Admin> {
     try {
       // Remove sensitive fields that shouldn't be updated
       const { password, ...safeUpdateData } = updateData;

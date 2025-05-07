@@ -6,5 +6,6 @@ export interface SuperInterface{
     net_earning:number;
     fee_percentage:number
     user?:User
-    admin?:Admin[]
+    admin:Admin[]
+    created_at:Date
 }
