@@ -235,7 +235,7 @@ export const updateGameStatus = async (game_id: string, winnerCartela) => {
     try {
         const existingGame = await GameRepository.getRepo().findById(game_id);
         if (!existingGame) return;
-        await GameRepository.getRepo().update(existingGame, { status: "completed", winner_cards: winnerCartela });
+        await GameRepository.getRepo().update(existingGame, { status:"completed", winner_cards: winnerCartela });
         return;
     } catch (error) {
         console.log(error);

@@ -30,6 +30,7 @@ class App {
             origin: [
                 "http://localhost:3001",
                 "http://localhost:3002",
+                "https://fundisha-bingo.vercel.app",
                 "https://luana-bingo.vercel.app", // Removed trailing slash
                 "https://luana-bingo-git-dev-user-luanabingo.vercel.app" // Add if using preview deployments
             ],
