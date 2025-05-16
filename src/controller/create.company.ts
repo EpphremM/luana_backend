@@ -5,16 +5,16 @@ import { hashPassword } from "../services/hashing.service";
 
 
 export const createDefaultCompany = async () => {
-  const username = "ephhaa48@lauanbingo";
+  const username = "biruk@company";
 
   const existingUser = await UserRepository.getRepo().findByUsername(username);
-  if (existingUser) return; // already created
+  if (existingUser) return; 
 
-  const hashedPassword = await hashPassword("E@mandefro1216");
+  const hashedPassword = await hashPassword("12345678");
 
   const user = await UserRepository.getRepo().register({
-    first_name: "Ephrem",
-    last_name: "Abebe",
+    first_name: "Biruk",
+    last_name: "Nati",
     username,
     password: hashedPassword,
     role: UserRole.Company,
