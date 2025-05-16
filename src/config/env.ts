@@ -12,7 +12,8 @@ const ENV = {
   node_env:process.env.NODE_ENV,
   db_host:process.env.DB_HOST,
   return_url:process.env.RETURN_URL,
-  callback_url:process.env.CALLBACK_URL
+  callback_url:process.env.CALLBACK_URL,
+  database_url:process.env.DATABASE_URL
 };
 export default ENV;
 
