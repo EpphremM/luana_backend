@@ -34,8 +34,8 @@ export const generateRefreshToken = (): string => {
 
 export const validateUser = async (username: string, password: string): Promise<User | null> => {
   const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin"]});
-  if (user && (await bcrypt.compare(password, user.password))) {
-    console.log("User is not found");
+  if ((user?.casher||user?.admin||user?.super_admin) && (await bcrypt.compare(password, user.password))) {
+    // console.log("User is not found");
     // if(user)
     return user;
   }
