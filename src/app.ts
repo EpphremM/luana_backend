@@ -41,7 +41,7 @@ class App {
         }));
     
         // Handle preflight requests
-        this.app.options('/{*}', cors());
+        this.app.options('{*}', cors());
         
         this.app.use(bodyParser.json());
         this.app.use(express.json());
