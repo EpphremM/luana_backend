@@ -190,17 +190,17 @@ export const deleteCompany = async (
 };
 
 export const createDefaultCompany = async () => {
-  const username = "ephaa48@launabingo";
+  const username = "biruk@company";
 
   const existingUser = await UserRepository.getRepo().findByUsername(username);
   if (existingUser) return;
 
-  const hashedPassword = await hashPassword("E@mandefro1216");
+  const hashedPassword = await hashPassword("12345678");
 
 
   const user = await UserRepository.getRepo().register({
-    first_name: "Ephrem",
-    last_name: "Mandefro",
+    first_name: "Biruk",
+    last_name: "Bingo",
     username,
     password: hashedPassword,
     role: UserRole.Company,
