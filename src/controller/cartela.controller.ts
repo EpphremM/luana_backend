@@ -6,6 +6,8 @@ import { CartelaRepository } from "../database/repositories/cartela.repository";
 import { createResponse } from "../express/types/response.body";
 import { validateInput } from "../zod/middleware/zod.validation";
 import { CartelaSchema, UpdateCartelaSchema } from "../zod/schemas/cartela.schema";
+import { AdminRepository } from "../database/repositories/admin.repository";
+
 
 export const register=async(req:Request,res:Response,next:NextFunction):Promise<void>=>{
 try{
@@ -91,5 +93,33 @@ export const update=async(req:Request,res:Response,next:NextFunction):Promise<vo
 
     }catch(error){
         next(new AppError("Error occured duting editing cartela",400,error));
+    }
+}
+
+export const copyCartela=async(req:Request,res:Response,next:NextFunction):Promise<void>=>{
+
+    try{
+        const {from_admin_id,to_admin_id}=req.body;
+        const fromAdmin=await AdminRepository.getRepo().findById(from_admin_id);
+        if(!fromAdmin||!fromAdmin.cartela_id){
+            res.status(200).json(createResponse("fail","Invalid User id or cartela not found",[]))
+            return;
+        }
+console.log("TO ADMIN ID IS",to_admin_id);
+        const toAdmin=await AdminRepository.getRepo().findById(to_admin_id);
+        console.log("fetched admin is",toAdmin);
+        if(!toAdmin){
+            res.status(200).json(createResponse("fail","Admin not found",[]))
+            return;
+        }
+        toAdmin.cartela_id=fromAdmin.cartela_id;
+        const updateToUpdmin=await AdminRepository.getRepo().smallUpdate(toAdmin.id,{cartela_id:fromAdmin.cartela_id})
+        console.log(updateToUpdmin);
+        console.log(toAdmin.cartela_id);
+        console.log("Updated admin",updateToUpdmin);
+        res.status(200).json(createResponse("success","Cartela copied successfully",toAdmin))
+
+    }catch(error){
+        console.log(error);
     }
 }

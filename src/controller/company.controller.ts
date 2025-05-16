@@ -229,13 +229,16 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
       )
     );
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    
     const weekStart = new Date(todayStart);
-    weekStart.setDate(todayStart.getDate() - todayStart.getDay()); // Sunday start
-    const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
-    const yearStart = new Date(todayStart.getFullYear(), 0, 1);
+    weekStart.setUTCDate(todayStart.getUTCDate() - (todayStart.getUTCDay() || 7) + 1);
+    
+    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1)); 
+    const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
+    
     const filterByDate = (games: any[], startDate: Date) =>
-      games.filter(game => new Date(game.created_at) >= startDate);
+      games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
     const calculateEarnings = (games: any[]) =>
       games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
 

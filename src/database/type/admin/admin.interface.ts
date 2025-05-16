@@ -1,3 +1,4 @@
+import { Cartela } from "../../entities/cartela.entity";
 import { Casher } from "../../entities/casher.entity";
 import { Game } from "../../entities/game.entity";
 import { User } from "../../entities/user.entity";

@@ -7,12 +7,12 @@ import { Admin } from "./admin.entity";
 export class Cartela implements CartelaInterface{
     @PrimaryGeneratedColumn("uuid")
     id:string;
-    @Column({unique:true})
+    @Column()
     name:string;
     @OneToMany(()=>Card,card=>card.cartela)
     cards:Card[]
-    @OneToOne(()=>Admin,admin=>admin.cartela)
-    admin:Admin
+    @OneToMany(()=>Admin,admin=>admin.cartela)
+    admin:Admin[]
     @CreateDateColumn()
     created_at:Date
 }

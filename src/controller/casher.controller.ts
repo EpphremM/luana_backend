@@ -11,6 +11,8 @@ import { createResponse } from "../express/types/response.body";
 import { CasherInterface } from "../database/type/casher/casher.interface";
 import { casherSchema } from "../zod/schemas/casher.schema";
 import { CasherRepository } from "../database/repositories/casher.repository";
+import { GameRepository } from "../database/repositories/game.repository";
+import { PaginationDto } from "../DTO/pagination.dto";
 
 export const signup = async (
   req: Request,
@@ -198,14 +200,22 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
 
     const completedGames = cashier.game.filter(game => game.status === "completed");
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const weekStart = new Date(todayStart);
-    weekStart.setDate(todayStart.getDate() - todayStart.getDay());
-    const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
-    const yearStart = new Date(todayStart.getFullYear(), 0, 1);
-    const filterByDate = (games: any[], startDate: Date) => 
-      games.filter(game => new Date(game.created_at) >= startDate);
-
+    const dayOfWeek = todayStart.getUTCDay();
+    weekStart.setUTCDate(todayStart.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
+    const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
+    
+    const filterByDate = (games: any[], startDate: Date) =>
+        games.filter(game => new Date(game.created_at) >= startDate);
+    
+    // Or more precise UTC comparison:
+    const filterByDateUTC = (games: any[], startDate: Date) =>
+        games.filter(game => {
+            const gameDate = new Date(game.created_at);
+            return gameDate >= startDate;
+        });
     const calculateEarnings = (games: any[]) => 
       games.reduce((total, game) => 
         total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
@@ -232,5 +242,80 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     console.log("Error calculating cashier earnings:", error);
     next(new AppError("Failed to calculate cashier earnings", 500, "Operational"));
+  }
+};
+
+export const weeklyEarnings = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const paginationDto: PaginationDto = req.query;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - (today.getDay() || 7) + 1); 
+    const weekEnd = new Date();
+    const result = await GameRepository.getRepo().findGameByCasherId(id, paginationDto);
+    
+    const allGames = result.data;
+    const weeklyCompletedGames = allGames.filter(game => {
+      const gameDate = new Date(game.created_at);
+      return game.status === "completed" && 
+             gameDate >= weekStart && 
+             gameDate <= weekEnd;
+    });
+    const dailyTotals: Record<string, {
+      date: string;
+      dayName: string;
+      totalEarnings: number;
+      gamesCount: number;
+      games: any[];
+    }> = {};
+    const currentDate = new Date(weekStart);
+    while (currentDate <= weekEnd) {
+      const dateKey = currentDate.toISOString().split('T')[0];
+      const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+      const formattedDate = currentDate.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      dailyTotals[dateKey] = {
+        date: formattedDate,
+        dayName: dayName,
+        totalEarnings: 0,
+        gamesCount: 0,
+        games: []
+      };
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    weeklyCompletedGames.forEach(game => {
+      const gameDate = new Date(game.created_at);
+      const dateKey = gameDate.toISOString().split('T')[0];
+      
+      if (dailyTotals[dateKey]) {
+        dailyTotals[dateKey].totalEarnings += Number(game.admin_price);
+        dailyTotals[dateKey].gamesCount += 1;
+        dailyTotals[dateKey].games.push(game);
+      }
+    });
+
+    const dailyEarningsArray = Object.values(dailyTotals).sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+
+    res.status(200).json(createResponse("success", "Weekly earnings calculated successfully", {
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
+      currentDate: today.toISOString(),
+      data: dailyEarningsArray,
+      pagination: result.pagination
+    }));
+
+  } catch (error) {
+    console.log(error);
+    next(new AppError("Error calculating weekly earnings", 500, "Operational", error));
   }
 };

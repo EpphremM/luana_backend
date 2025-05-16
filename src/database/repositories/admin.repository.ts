@@ -18,12 +18,16 @@ export class AdminRepository {
   async register(user) {
     return await this.adminRepository.save(user);
   }
+  async smallUpdate(id: string, newAdmin: Partial<AdminInterface>) {
+    await this.adminRepository.update(id, newAdmin);
+    return await this.adminRepository.findOneBy({ id });
+  }
   async find(pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));
     const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit)))); // Enforce reasonable limits
     const skip = (parsedPage - 1) * parsedLimit;
-      const query = this.adminRepository.createQueryBuilder('admin')
+    const query = this.adminRepository.createQueryBuilder('admin')
       .leftJoinAndSelect('admin.cashers', 'casher')
       .leftJoinAndSelect('admin.company', 'company')
       .leftJoinAndSelect('admin.user', 'user')
@@ -33,7 +37,7 @@ export class AdminRepository {
       .skip(skip)
       .getManyAndCount();
     const totalPages = Math.ceil(total / parsedLimit);
-  
+
     return {
       data: admins,
       pagination: {
@@ -50,7 +54,7 @@ export class AdminRepository {
   async findById(id: string) {
     const admin = await this.adminRepository.findOne({
       where: { id },
-      relations: ["user", "cashers", "cashers.user", "company", "cashers.game","cartela","cartela.cards"],
+      relations: ["user", "cashers", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"],
     });
     return admin;
   }

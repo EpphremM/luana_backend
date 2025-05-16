@@ -8,6 +8,7 @@ import {
 } from '../services/auth.service';
 import { createResponse } from '../express/types/response.body';
 import ENV from '../config/env';
+import { AppError } from '../express/error/app.error';
 
 declare global {
   namespace Express {
@@ -97,27 +98,22 @@ export const validateSession = async (req: Request, res: Response, next: NextFun
     const accessToken = req.cookies['access_token'];
     // console.log(accessToken);
     if (!accessToken) {
-      res.status(401).json(
-        createResponse("fail", "No access token provided", [])
-      );
-      return; // Explicit return
+      next(new AppError("No access token provided",401,"Operational"));
+    
+      return;
     }
 
     // 2. Verify and decode the token
     const decoded = decodeToken(accessToken);
     if (!decoded) {
-      res.status(401).json(
-        createResponse("fail", "Invalid token", [])
-      );
+      next(new AppError("Invalid token",401,"Operational"))
       return;
     }
 
     // 3. Verify device fingerprint matches
     const currentFingerprint = generateDeviceFingerprint(req);
     if (decoded.fingerprint !== currentFingerprint) {
-      res.status(401).json(
-        createResponse("fail", "Device mismatch", [])
-      );
+      next(new AppError("Device mismatch",401,"Operational"))
       return;
     }
 
@@ -133,8 +129,6 @@ export const validateSession = async (req: Request, res: Response, next: NextFun
     );
 
   } catch (error) {
-    res.status(401).json(
-      createResponse("fail", error instanceof Error ? error.message : "Session validation failed", [])
-    );
+    next(new AppError("Validation error",401,"Operational"))
   }
 };

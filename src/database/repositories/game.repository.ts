@@ -77,6 +77,9 @@ async findById(id:string){
 async delete(id:string){
     return await this.gameRepository.delete(id)
 }
+async findByCashierId(id:string){
+    return  this.gameRepository.createQueryBuilder('game').where({ casher_id: id }).leftJoinAndSelect('game.casher', 'casher').getManyAndCount();
+}
 
     async update(game, updateData) {
         try {

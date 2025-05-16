@@ -12,4 +12,5 @@ export class GameInterface{
     created_at:Date;
     casher_id?:string;
     casher?:Casher;
+    admin_price:number;
 }

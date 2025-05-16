@@ -29,7 +29,7 @@ user: User;
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
 @JoinColumn({name:"super_id"})
 company:SuperAdmin;
-@OneToOne(()=>Cartela,cartela=>cartela.admin)
+@ManyToOne(()=>Cartela,cartela=>cartela.admin)
 @JoinColumn({name:"cartela_id"})
 cartela:Cartela;
 @Column({nullable:true})
