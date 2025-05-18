@@ -18,8 +18,8 @@ class App {
     constructor() {
   
         this.app = express();
-        this.initializeMiddleware(); // Initialize middleware FIRST
-        this.initializeRoutes();     // Then routes
+        this.initializeMiddleware(); 
+        this.initializeRoutes();   
     }
 
     private initializeMiddleware() {
