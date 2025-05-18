@@ -25,7 +25,7 @@ class App {
     private initializeMiddleware() {
         this.app.use(cookieParser());
         
-        // Enhanced CORS configuration
+       
         this.app.use(cors({
             origin: [
                 "http://localhost:3001",
