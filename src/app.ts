@@ -30,7 +30,7 @@ class App {
             origin: [
                 // "http://localhost:3001",
                 // "http://localhost:3002",
-                "https://tamagn-bigno.onrender.com",
+                "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
                 "https://abyssinia-bingo.onrender.com",
