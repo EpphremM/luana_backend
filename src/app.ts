@@ -28,13 +28,12 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
-                "http://localhost:3001",
-                "http://localhost:3002",
+                // "http://localhost:3001",
+                // "http://localhost:3002",
                 "https://tamagn-bigno.onrender.com",
-                "https://luana-bingo.vercel.app", // Removed trailing slash
-                "https://fendisha-bingo.onrender.com",
+                // "https://luana-bingo.vercel.app", 
+                // "https://fendisha-bingo.onrender.com",
                 "https://abyssinia-bingo.onrender.com",
-                "https://luana-bingo-git-dev-user-luanabingo.vercel.app" // Add if using preview deployments
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
