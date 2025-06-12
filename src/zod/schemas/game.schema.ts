@@ -7,7 +7,6 @@ const winnerCardsSchema = z.array(z.number().int().positive());
 
 // Main game schema
 export const gameSchema = z.object({
-  id: z.string().uuid().optional(), 
   name: z.string().min(1, "Name is required"),
   player_bet: z.number().positive("Player bet must be positive"),
   total_calls: z.number().int().nonnegative("Total calls must be a non-negative integer"),
@@ -28,7 +27,6 @@ export const updateGameSchema = gameSchema.partial().refine(data => {
 
 // Schema for creating a new game (without optional fields)
 export const createGameSchema = gameSchema.omit({ 
-  id: true, 
   created_at: true,
   is_aggregated: true 
 }).extend({

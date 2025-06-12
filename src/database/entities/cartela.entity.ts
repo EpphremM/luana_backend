@@ -5,7 +5,7 @@ import { Admin } from "./admin.entity";
 
 @Entity("cartela")
 export class Cartela implements CartelaInterface{
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id:string;
     @Column()
     name:string;

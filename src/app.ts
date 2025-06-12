@@ -28,8 +28,8 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
-                // "http://localhost:3001",
-                // "http://localhost:3002",
+                "http://localhost:3001",
+                "https://tamagnbingo.com",
                 "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
@@ -42,7 +42,9 @@ class App {
         }));
     
         // Handle preflight requests
+        // this.app.options('/{*any}', cors());
         this.app.options('{*}', cors());
+        
         
         this.app.use(bodyParser.json());
         this.app.use(express.json());

@@ -8,7 +8,7 @@ import { RefreshToken } from "./refresh.entity";
 
 @Entity("user")
 export class User implements UserInterface {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id: string;
 
     @Column()

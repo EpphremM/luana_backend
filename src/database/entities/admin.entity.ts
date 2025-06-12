@@ -8,7 +8,7 @@ import { Cartela } from "./cartela.entity";
 
 @Entity("admin")
 export class Admin implements AdminInterface{
-@PrimaryGeneratedColumn("uuid")
+@PrimaryGeneratedColumn()
 id:string;
 @Column({type:"enum", enum: PermissionStatus,default:PermissionStatus.Pemitted,nullable:true})
 status: PermissionStatus;

@@ -6,7 +6,7 @@ import { Casher } from "./casher.entity";
 
 @Entity("game")
 export class Game implements GameInterface {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn()
   id: string;
   @Column()
   name: string;

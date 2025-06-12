@@ -24,7 +24,7 @@ export const signup = async (
 
     if (validationStatus.status !== "success") {
         console.log(validationStatus);
-      return next(new AppError("Invalid Request", 400, "Operational"));
+      return next(new AppError(`Invalid Request ${req.body}`, 400, "Operational"));
     }
 
     const { casher, password, confirm_password, username, first_name, last_name,phone } = req.body;

@@ -23,7 +23,7 @@ export const generateAccessToken = (user: User, fingerprint: string): string => 
       role: user.role,
       fingerprint
     },
-    process.env.JWT_SECRET!,
+  "Tutoring web d0b41d4a-a424-4566-adb4-c5c742732129"!,
     { expiresIn: '1h' }
   );
 };
@@ -142,6 +142,6 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
 
 
 export const decodeToken=(token)=>{
-  const decoded = jwt.verify(token,process.env.JWT_SECRET);
+  const decoded = jwt.verify(token,"Tutoring web d0b41d4a-a424-4566-adb4-c5c742732129");
   return decoded;
 }
