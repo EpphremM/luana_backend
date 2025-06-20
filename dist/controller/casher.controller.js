@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.weeklyEarnings = exports.cashierEarnings = exports.deleteCasher = exports.updateCasher = exports.getOneCasher = exports.getCashers = exports.signup = void 0;
+exports.weeklyReport = exports.weeklyEarnings = exports.cashierEarnings = exports.deleteCasher = exports.updateCasher = exports.getOneCasher = exports.getCashers = exports.signup = void 0;
 const company_schema_1 = require("../zod/schemas/company.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const app_error_1 = require("../express/error/app.error");
@@ -260,3 +260,54 @@ const weeklyEarnings = async (req, res, next) => {
     }
 };
 exports.weeklyEarnings = weeklyEarnings;
+const weeklyReport = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const cashier = await casher_repository_1.CasherRepository.getRepo().findById(id);
+        if (!cashier) {
+            return next(new app_error_1.AppError("Cashier not found", 404, "Operational"));
+        }
+        const [games] = await game_repository_1.GameRepository.getRepo().findByCashierId(id);
+        // Last 15 days
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
+        // Initialize empty report for last 15 days
+        const report = [];
+        // Pre-fill all 15 days (even if no games exist)
+        for (let i = 0; i < 15; i++) {
+            const date = new Date(fifteenDaysAgo);
+            date.setDate(date.getDate() + i);
+            report.push({
+                date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+                day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+                amount: 0
+            });
+        }
+        // Process each game
+        for (const game of games) {
+            const gameDate = new Date(game.created_at);
+            if (gameDate >= fifteenDaysAgo) {
+                const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                // Find the corresponding day in report
+                const dayEntry = report.find(entry => entry.date === dateStr);
+                if (dayEntry) {
+                    dayEntry.amount += typeof game.admin_price === 'string'
+                        ? parseFloat(game.admin_price)
+                        : Number(game.admin_price) || 0;
+                }
+            }
+        }
+        res.status(200).json({
+            status: 'success',
+            data: report.map(entry => ({
+                ...entry,
+                amount: entry.amount.toFixed(2)
+            }))
+        });
+    }
+    catch (error) {
+        console.error("Error", error);
+        next(new app_error_1.AppError("Internal server error", 500, "Operational"));
+    }
+};
+exports.weeklyReport = weeklyReport;

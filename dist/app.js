@@ -28,11 +28,12 @@ class App {
         this.app.use((0, cors_1.default)({
             origin: [
                 // "http://localhost:3001",
-                "https://goobingo.com",
+                // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
                 // "https://abyssinia-bingo.onrender.com",
+                "https://abyssiniagames.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
@@ -41,7 +42,7 @@ class App {
         }));
         // Handle preflight requests
         // this.app.options('/{*any}', cors());
-        this.app.options('{*}', (0, cors_1.default)());
+        this.app.options('*', (0, cors_1.default)());
         this.app.use(body_parser_1.default.json());
         this.app.use(express_1.default.json());
     }

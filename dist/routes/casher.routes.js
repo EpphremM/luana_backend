@@ -15,6 +15,7 @@ class CasherRoutes {
         this.router.route("/").get(casher_controller_1.getCashers);
         this.router.route("/earnings/:id").get(casher_controller_1.cashierEarnings);
         this.router.route("/weekly/:id").get(casher_controller_1.weeklyEarnings);
+        this.router.route("/report/:id").get(casher_controller_1.weeklyReport);
         this.router.route("/:id").get(casher_controller_1.getOneCasher).patch((0, role_middleware_1.requireRole)([role_enum_1.UserRole.Admin, role_enum_1.UserRole.Casher, role_enum_1.UserRole.Company]), casher_controller_1.updateCasher).delete((0, role_middleware_1.requireRole)([role_enum_1.UserRole.Admin, role_enum_1.UserRole.Casher, role_enum_1.UserRole.Company]), casher_controller_1.deleteCasher);
     }
 }
