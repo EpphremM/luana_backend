@@ -28,12 +28,13 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
-                "http://localhost:3001",
-                "https://tamagnbingo.com",
-                "https://tamagn-bingo.onrender.com",
+                // "http://localhost:3001",
+                // "https://goobingo.com",
+                // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
-                "https://abyssinia-bingo.onrender.com",
+                // "https://abyssinia-bingo.onrender.com",
+                "https://abyssiniagames.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
@@ -43,7 +44,7 @@ class App {
     
         // Handle preflight requests
         // this.app.options('/{*any}', cors());
-        this.app.options('{*}', cors());
+        this.app.options('*', cors());
         
         
         this.app.use(bodyParser.json());

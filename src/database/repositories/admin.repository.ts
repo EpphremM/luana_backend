@@ -22,6 +22,9 @@ export class AdminRepository {
     await this.adminRepository.update(id, newAdmin);
     return await this.adminRepository.findOneBy({ id });
   }
+  async findll(){
+    return await this.adminRepository.find({relations: ["user", "cashers", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"]});
+  }
   async find(pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));

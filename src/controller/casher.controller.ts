@@ -13,6 +13,7 @@ import { casherSchema } from "../zod/schemas/casher.schema";
 import { CasherRepository } from "../database/repositories/casher.repository";
 import { GameRepository } from "../database/repositories/game.repository";
 import { PaginationDto } from "../DTO/pagination.dto";
+import { GameInterface } from "../database/type/game/game.interface";
 
 export const signup = async (
   req: Request,
@@ -317,5 +318,65 @@ export const weeklyEarnings = async (req: Request, res: Response, next: NextFunc
   } catch (error) {
     console.log(error);
     next(new AppError("Error calculating weekly earnings", 500, "Operational", error));
+  }
+};
+
+export const weeklyReport = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const cashier = await CasherRepository.getRepo().findById(id);
+    if (!cashier) {
+      return next(new AppError("Cashier not found", 404, "Operational"));
+    }
+
+    const [games] = await GameRepository.getRepo().findByCashierId(id);
+
+    // Last 15 days
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
+
+    // Initialize empty report for last 15 days
+    const report: { date: string; day: string; amount: number }[] = [];
+    
+    // Pre-fill all 15 days (even if no games exist)
+    for (let i = 0; i < 15; i++) {
+      const date = new Date(fifteenDaysAgo);
+      date.setDate(date.getDate() + i);
+      
+      report.push({
+        date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+        amount: 0
+      });
+    }
+
+    // Process each game
+    for (const game of games) {
+      const gameDate = new Date(game.created_at);
+      if (gameDate >= fifteenDaysAgo) {
+        const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        
+        // Find the corresponding day in report
+        const dayEntry = report.find(entry => entry.date === dateStr);
+        if (dayEntry) {
+          dayEntry.amount += typeof game.admin_price === 'string' 
+            ? parseFloat(game.admin_price) 
+            : Number(game.admin_price) || 0;
+        }
+      }
+    }
+
+    res.status(200).json({ 
+      status: 'success',
+      data: report.map(entry => ({
+        ...entry,
+        amount: entry.amount.toFixed(2)
+      }))
+    });
+
+  } catch (error) {
+    console.error("Error", error);
+    next(new AppError("Internal server error", 500, "Operational"));
   }
 };

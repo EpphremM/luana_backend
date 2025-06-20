@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, getAdmin, getOne, update, deleteAdmin, AdminEarnings } from "../controller/admin.controller";
+import { signup, getAdmin, getOne, update, deleteAdmin, AdminEarnings, admin15DayReport } from "../controller/admin.controller";
 import { requireRole } from "../utils/role.middleware";
 import { UserRole } from "../database/enum/role.enum";
 
@@ -14,6 +14,7 @@ private setRoutes(){
     this.router.route("/").post(signup);
     this.router.route("/").get(getAdmin);
     this.router.route("/earnings/:id").get(AdminEarnings);
+    this.router.route("/report/last15days").get(admin15DayReport)
     this.router.route("/:id").get(getOne).patch(update).delete(requireRole(UserRole.Company),deleteAdmin);
 }
 }
