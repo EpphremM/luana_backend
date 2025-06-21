@@ -28,7 +28,7 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
-                // "http://localhost:3001",
+                "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
