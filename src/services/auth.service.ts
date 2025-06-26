@@ -91,7 +91,6 @@ export const loginUser = async (username: string, password: string, req: Request
   const refreshToken = generateRefreshToken();
 
   await createRefreshToken(user, refreshToken, fingerprint);
-// console.log(user);
   return {
     user: {
       id: user.id,

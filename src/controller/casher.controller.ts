@@ -14,6 +14,7 @@ import { CasherRepository } from "../database/repositories/casher.repository";
 import { GameRepository } from "../database/repositories/game.repository";
 import { PaginationDto } from "../DTO/pagination.dto";
 import { GameInterface } from "../database/type/game/game.interface";
+import { AdminRepository } from "../database/repositories/admin.repository";
 
 export const signup = async (
   req: Request,
@@ -378,5 +379,48 @@ export const weeklyReport = async (req: Request, res: Response, next: NextFuncti
   } catch (error) {
     console.error("Error", error);
     next(new AppError("Internal server error", 500, "Operational"));
+  }
+};
+
+
+export const findBalance=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+    const {id}=req.params;
+    const cashier=await CasherRepository.getRepo().findById(id);
+    if(!cashier){
+ return next(new AppError("Cashier not found", 404, "Operational"));
+    }
+    res.status(200).json(createResponse("success","Cashier balace fetched successfully",{package:cashier?.admin?.package}));
+    return;
+
+  }catch(error){
+    return next(new AppError("Error occured during geting cashier cashier data",400,"Operational"))
+  }
+
+}
+
+export const updateBalance = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const cashier = await CasherRepository.getRepo().findById(id);
+
+    if (!cashier || !cashier.admin) {
+      return next(new AppError("Cashier or associated admin not found", 404, "Operational"));
+    }
+
+    const admin_id = cashier.admin.id;
+    const { package: packageAmount } = req.body;
+
+    const updated_admin = await AdminRepository.getRepo().smallUpdate(admin_id, {
+      package: packageAmount,
+    });
+
+    res.status(200).json(
+      createResponse("success", "Balance updated successfully", updated_admin)
+    );
+  } catch (error) {
+    return next(
+      new AppError("Error occurred during updating user balance", 400, "Operational")
+    );
   }
 };

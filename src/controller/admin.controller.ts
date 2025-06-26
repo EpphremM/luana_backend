@@ -193,7 +193,6 @@ export const deleteAdmin = async (
   try {
     const { id } = req.params;
 
-    // 1. Find the admin with user relation
     const admin = await AdminRepository.getRepo().findById(id);
 
     if (!admin) {
@@ -201,10 +200,8 @@ export const deleteAdmin = async (
       return;
     }
 
-    // 2. Delete using repository method
     await AdminRepository.getRepo().deleteWithUser(admin);
 
-    // 3. Return success response
     res.status(200).json(createResponse("success", "Admin deleted successfully", []))
 
   } catch (error) {

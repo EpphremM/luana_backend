@@ -126,3 +126,10 @@ export const validateSession = async (req: Request, res: Response, next: NextFun
     next(new AppError("Validation error", 401, "Operational"));
   }
 };
+
+export const ping = (req: Request, res: Response) => {
+  res.status(200).json({
+    status: "success",
+    message: "server is running",
+  });
+};
