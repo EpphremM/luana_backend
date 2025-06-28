@@ -4,7 +4,7 @@ import { Cartela } from "./cartela.entity";
 
 @Entity("card")
 export class Card implements CardInterface {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id: string;
     @Column("int", { array: true })
     cards: number[]

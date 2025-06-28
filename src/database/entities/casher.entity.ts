@@ -6,7 +6,7 @@ import { Admin } from "./admin.entity";
 import { Game } from "./game.entity";
 @Entity("casher")
 export class Casher implements CasherInterface {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id:string;
     @Column({type:"enum",enum:PermissionStatus,default:PermissionStatus.Pemitted})
     status:string;

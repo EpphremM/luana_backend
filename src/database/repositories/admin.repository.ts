@@ -22,6 +22,9 @@ export class AdminRepository {
     await this.adminRepository.update(id, newAdmin);
     return await this.adminRepository.findOneBy({ id });
   }
+  async findll(){
+    return await this.adminRepository.find({relations: ["user", "cashers", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"]});
+  }
   async find(pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));
@@ -64,13 +67,8 @@ export class AdminRepository {
   }
   async update(admin, updateData: Partial<UserInterface>): Promise<Admin> {
     try {
-      // Remove sensitive fields that shouldn't be updated
       const { password, ...safeUpdateData } = updateData;
-
-      // Update the admin entity with new values
       Object.assign(admin, safeUpdateData);
-
-      // Explicitly update the user relation if needed
       if (safeUpdateData.first_name || safeUpdateData.last_name || safeUpdateData.username) {
         Object.assign(admin.user, {
           first_name: safeUpdateData.first_name,

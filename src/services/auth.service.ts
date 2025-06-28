@@ -19,11 +19,11 @@ export const generateDeviceFingerprint = (req: Request): string => {
 export const generateAccessToken = (user: User, fingerprint: string): string => {
   return jwt.sign(
     {
-      userId:user.admin?.id||user.casher?.id||user.super_admin?.id,
+      userId:user.admin?.id||user.casher?.id||user.super_admin?.id || user?.super_agent?.id,
       role: user.role,
       fingerprint
     },
-    process.env.JWT_SECRET!,
+  "Tutoring web d0b41d4a-a424-4566-adb4-c5c742732129"!,
     { expiresIn: '1h' }
   );
 };
@@ -33,8 +33,8 @@ export const generateRefreshToken = (): string => {
 };
 
 export const validateUser = async (username: string, password: string): Promise<User | null> => {
-  const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin"]});
-  if ((user?.casher||user?.admin||user?.super_admin) && (await bcrypt.compare(password, user.password))) {
+  const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin","super_agent"]});
+  if ((user?.casher||user?.admin||user?.super_admin || user?.super_agent) && (await bcrypt.compare(password, user.password))) {
     // console.log("User is not found");
     // if(user)
     return user;
@@ -46,7 +46,7 @@ export const createRefreshToken = async (
   user: User,
   token: string,
   fingerprint: string,
-  expiresIn: number = 60 * 60 * 24 * 7 // 7 days
+  expiresIn: number = 60 * 60 * 24 * 7 
 ): Promise<RefreshToken> => {
   const refreshToken = refreshTokenRepository.create({
     tokenHash: crypto.createHash('sha256').update(token).digest('hex'),
@@ -81,7 +81,7 @@ export const loginUser = async (username: string, password: string, req: Request
   if (!user) {
     throw new Error('Invalid credentials');
   }
-  const status=user?.admin?.status||user?.casher?.status;
+  const status=user?.admin?.status||user?.casher?.status || user?.super_agent?.status;
  if(status==="blocked"){
   throw new Error("Temporarily account is blocked please contact admin");
  }
@@ -91,7 +91,6 @@ export const loginUser = async (username: string, password: string, req: Request
   const refreshToken = generateRefreshToken();
 
   await createRefreshToken(user, refreshToken, fingerprint);
-// console.log(user);
   return {
     user: {
       id: user.id,
@@ -142,6 +141,6 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
 
 
 export const decodeToken=(token)=>{
-  const decoded = jwt.verify(token,process.env.JWT_SECRET);
+  const decoded = jwt.verify(token,"Tutoring web d0b41d4a-a424-4566-adb4-c5c742732129");
   return decoded;
 }

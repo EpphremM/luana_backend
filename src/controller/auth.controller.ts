@@ -94,41 +94,42 @@ export const logout = async (req: Request, res: Response) => {
 
 export const validateSession = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 1. Check for access token in cookies
     const accessToken = req.cookies['access_token'];
-    // console.log(accessToken);
     if (!accessToken) {
-      next(new AppError("No access token provided",401,"Operational"));
-    
+      next(new AppError("No access token provided", 401, "Operational"));
       return;
     }
 
-    // 2. Verify and decode the token
     const decoded = decodeToken(accessToken);
-    if (!decoded) {
-      next(new AppError("Invalid token",401,"Operational"))
+    if (!decoded || typeof decoded === "string") {
+      next(new AppError("Invalid token", 401, "Operational"));
       return;
     }
 
-    // 3. Verify device fingerprint matches
+    // Now TypeScript knows decoded is an object with properties
     const currentFingerprint = generateDeviceFingerprint(req);
     if (decoded.fingerprint !== currentFingerprint) {
-      next(new AppError("Device mismatch",401,"Operational"))
+      next(new AppError("Device mismatch", 401, "Operational"));
       return;
     }
 
-    // 4. If all checks pass, return success with user data
     res.status(200).json(
       createResponse("success", "Session valid", {
         user: {
           userId: decoded.userId,
           role: decoded.role,
-          fingerprint: decoded.fingerprint
-        }
+          fingerprint: decoded.fingerprint,
+        },
       })
     );
-
   } catch (error) {
-    next(new AppError("Validation error",401,"Operational"))
+    next(new AppError("Validation error", 401, "Operational"));
   }
+};
+
+export const ping = (req: Request, res: Response) => {
+  res.status(200).json({
+    status: "success",
+    message: "server is running",
+  });
 };

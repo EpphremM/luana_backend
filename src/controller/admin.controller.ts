@@ -193,7 +193,6 @@ export const deleteAdmin = async (
   try {
     const { id } = req.params;
 
-    // 1. Find the admin with user relation
     const admin = await AdminRepository.getRepo().findById(id);
 
     if (!admin) {
@@ -201,10 +200,8 @@ export const deleteAdmin = async (
       return;
     }
 
-    // 2. Delete using repository method
     await AdminRepository.getRepo().deleteWithUser(admin);
 
-    // 3. Return success response
     res.status(200).json(createResponse("success", "Admin deleted successfully", []))
 
   } catch (error) {
@@ -259,5 +256,76 @@ export const AdminEarnings = async (req: Request, res: Response, next: NextFunct
   } catch (error) {
     console.log("Error: ", error);
     next(new AppError("Failed to fetch earnings", 500, "Operational"));
+  }
+};
+
+export const admin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Last 15 days calculation
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
+
+    // Get all admins with their cashiers and games
+    const admins = await AdminRepository.getRepo().findll()
+console.log(admins);
+    // Process each admin
+    const report = admins.map(admin => {
+      // Initialize 15-day structure
+      const dailyBreakdown = [];
+      for (let i = 0; i < 15; i++) {
+        const date = new Date(fifteenDaysAgo);
+        date.setDate(date.getDate() + i);
+        
+        dailyBreakdown.push({
+          date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+          amount: 0
+        });
+      }
+
+      let totalEarnings = 0;
+      let totalAdminShare = 0;
+
+      // Process each cashier's games
+      admin.cashers?.forEach(cashier => {
+        cashier.game?.forEach(game => {
+          const gameDate = new Date(game.created_at);
+          const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+          
+          const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
+          if (dayEntry) {
+            const adminPrice = typeof game.admin_price === 'string' 
+              ? parseFloat(game.admin_price) 
+              : Number(game.admin_price) || 0;
+            
+            dayEntry.amount += adminPrice;
+            totalAdminShare += adminPrice;
+            totalEarnings += (game.player_bet * game.total_player);
+          }
+        });
+      });
+
+      return {
+        id: admin.id,
+        first_name: admin.user?.first_name,
+        last_name: admin.user?.last_name,
+        total_cashiers: admin.cashers?.length || 0,
+        total_earnings: totalEarnings,
+        admin_share: totalAdminShare,
+        daily_breakdown: dailyBreakdown.map(day => ({
+          ...day,
+          amount: Number(day.amount.toFixed(2))
+        }))
+      };
+    });
+
+    res.status(200).json({ 
+      status: 'success',
+      data: report
+    });
+
+  } catch (error) {
+    console.error("Error", error);
+    next(new AppError("Internal server error", 500, "Operational"));
   }
 };

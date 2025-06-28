@@ -3,7 +3,7 @@ import { PermissionStatus } from "../../database/enum/permission.enum";
 
 const casherDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted),
-  admin_id:z.string()
+  admin_id:z.number()
 });
 
 export const casherSchema = z.object({

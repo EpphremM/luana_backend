@@ -17,7 +17,7 @@ export const requireRole = (roles: UserRole | UserRole[]) => {
         return;
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      const decoded = jwt.verify(token, "Tutoring web d0b41d4a-a424-4566-adb4-c5c742732129"!) as {
         userId: string;
         role: UserRole;
         fingerprint: string;

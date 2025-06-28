@@ -11,6 +11,7 @@ import cors from "cors";
 import { globalErrorHandler } from "./global/global.erro.handler";
 import { CartelaRoutes } from "./routes/cartela.routes";
 import { CardRoutes } from "./routes/card.routes";
+import { SuperAgentRoutes } from "./routes/super.agent.routes";
 
 class App {
     public app: Application;
@@ -28,12 +29,13 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
-                // "http://localhost:3001",
-                // "http://localhost:3002",
-                "https://tamagn-bingo.onrender.com",
+                "http://localhost:3001",
+                // "https://goobingo.com",
+                // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
-                "https://abyssinia-bingo.onrender.com",
+                // "https://abyssinia-bingo.onrender.com",
+                "https://abyssiniagames.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
@@ -42,7 +44,9 @@ class App {
         }));
     
         // Handle preflight requests
-        this.app.options('{*}', cors());
+        // this.app.options('/{*any}', cors());
+        this.app.options('*', cors());
+        
         
         this.app.use(bodyParser.json());
         this.app.use(express.json());
@@ -58,6 +62,7 @@ class App {
         const authRoutes = new AuthRoutes();
         const cardRoutes=new CardRoutes();
         const cartelaRoutes=new CartelaRoutes();
+        const superAgentRoutes=new SuperAgentRoutes();
         
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
@@ -67,9 +72,8 @@ class App {
         this.app.use("/bingo/v1/card", cardRoutes.router);
         this.app.use("/bingo/v1", authRoutes.router);
         this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
-        
+        this.app.use("/bingo/v1/super-agent", superAgentRoutes.router);
         this.app.use(globalErrorHandler);
     }
 }
-
 export default new App().app;
