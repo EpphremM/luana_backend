@@ -5,6 +5,7 @@ import { Casher } from "./casher.entity";
 import { Admin } from "./admin.entity";
 import { SuperAdmin } from "./company.entity";
 import { RefreshToken } from "./refresh.entity";
+import { SuperAgent } from "./agent.entity";
 
 @Entity("user")
 export class User implements UserInterface {
@@ -30,6 +31,8 @@ export class User implements UserInterface {
     casher?:Casher;
     @OneToOne(() => Admin, admin => admin.user,{cascade:true})
     admin?: Admin;
+     @OneToOne(() => SuperAgent, agent => agent.user,{cascade:true})
+    super_agent?: SuperAgent;
     @OneToMany(() => RefreshToken, (token) => token.user,{onDelete:"CASCADE",onUpdate:'CASCADE'})
     refreshTokens: RefreshToken[];
     @OneToOne(()=>SuperAdmin,superr=>superr.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})

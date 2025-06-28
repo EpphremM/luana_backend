@@ -67,13 +67,8 @@ export class AdminRepository {
   }
   async update(admin, updateData: Partial<UserInterface>): Promise<Admin> {
     try {
-      // Remove sensitive fields that shouldn't be updated
       const { password, ...safeUpdateData } = updateData;
-
-      // Update the admin entity with new values
       Object.assign(admin, safeUpdateData);
-
-      // Explicitly update the user relation if needed
       if (safeUpdateData.first_name || safeUpdateData.last_name || safeUpdateData.username) {
         Object.assign(admin.user, {
           first_name: safeUpdateData.first_name,

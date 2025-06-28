@@ -19,7 +19,7 @@ export const generateDeviceFingerprint = (req: Request): string => {
 export const generateAccessToken = (user: User, fingerprint: string): string => {
   return jwt.sign(
     {
-      userId:user.admin?.id||user.casher?.id||user.super_admin?.id,
+      userId:user.admin?.id||user.casher?.id||user.super_admin?.id || user?.super_agent?.id,
       role: user.role,
       fingerprint
     },
@@ -33,8 +33,8 @@ export const generateRefreshToken = (): string => {
 };
 
 export const validateUser = async (username: string, password: string): Promise<User | null> => {
-  const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin"]});
-  if ((user?.casher||user?.admin||user?.super_admin) && (await bcrypt.compare(password, user.password))) {
+  const user = await userRepository.findOne({ where: { username }, relations:["casher","admin","super_admin","super_agent"]});
+  if ((user?.casher||user?.admin||user?.super_admin || user?.super_agent) && (await bcrypt.compare(password, user.password))) {
     // console.log("User is not found");
     // if(user)
     return user;
@@ -46,7 +46,7 @@ export const createRefreshToken = async (
   user: User,
   token: string,
   fingerprint: string,
-  expiresIn: number = 60 * 60 * 24 * 7 // 7 days
+  expiresIn: number = 60 * 60 * 24 * 7 
 ): Promise<RefreshToken> => {
   const refreshToken = refreshTokenRepository.create({
     tokenHash: crypto.createHash('sha256').update(token).digest('hex'),
@@ -81,7 +81,7 @@ export const loginUser = async (username: string, password: string, req: Request
   if (!user) {
     throw new Error('Invalid credentials');
   }
-  const status=user?.admin?.status||user?.casher?.status;
+  const status=user?.admin?.status||user?.casher?.status || user?.super_agent?.status;
  if(status==="blocked"){
   throw new Error("Temporarily account is blocked please contact admin");
  }

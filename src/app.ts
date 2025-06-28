@@ -11,6 +11,7 @@ import cors from "cors";
 import { globalErrorHandler } from "./global/global.erro.handler";
 import { CartelaRoutes } from "./routes/cartela.routes";
 import { CardRoutes } from "./routes/card.routes";
+import { SuperAgentRoutes } from "./routes/super.agent.routes";
 
 class App {
     public app: Application;
@@ -61,6 +62,7 @@ class App {
         const authRoutes = new AuthRoutes();
         const cardRoutes=new CardRoutes();
         const cartelaRoutes=new CartelaRoutes();
+        const superAgentRoutes=new SuperAgentRoutes();
         
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
@@ -70,9 +72,8 @@ class App {
         this.app.use("/bingo/v1/card", cardRoutes.router);
         this.app.use("/bingo/v1", authRoutes.router);
         this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
-        
+        this.app.use("/bingo/v1/super-agent", superAgentRoutes.router);
         this.app.use(globalErrorHandler);
     }
 }
-
 export default new App().app;

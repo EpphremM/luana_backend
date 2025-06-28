@@ -1,7 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { SuperInterface } from "../type/super_admin/super.admin.interface";
 import { User } from "./user.entity";
 import { Admin } from "./admin.entity";
+import { SuperInterface } from "../type/super_admin/super.admin.interface";
+
 
 @Entity("company")
 export class SuperAdmin implements SuperInterface{
