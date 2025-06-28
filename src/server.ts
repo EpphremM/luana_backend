@@ -9,7 +9,7 @@ import express from "express";
 
 dotenv.config();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 console.log("DB Host:", process.env.DB_HOST);
 const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/build";
@@ -34,6 +34,6 @@ initializeConnection();
 //   console.log(`✅ HTTPS server running at https://localhost:${port}`);
 // });
 
-app.listen(3000,()=>{
+app.listen(port,()=>{
 console.log("Server is running...");
 })
