@@ -8,7 +8,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 require("reflect-metadata");
 const app_1 = __importDefault(require("./app"));
 dotenv_1.default.config();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 console.log("DB Host:", process.env.DB_HOST);
 const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/build";
 // Initialize DB
@@ -26,6 +26,6 @@ const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/buil
 // https.createServer(sslOptions, app).listen(port, () => {
 //   console.log(`✅ HTTPS server running at https://localhost:${port}`);
 // });
-app_1.default.listen(3000, () => {
+app_1.default.listen(port, () => {
     console.log("Server is running...");
 });
