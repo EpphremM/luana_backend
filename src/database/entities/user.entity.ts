@@ -6,21 +6,18 @@ import { Admin } from "./admin.entity";
 import { SuperAdmin } from "./company.entity";
 import { RefreshToken } from "./refresh.entity";
 import { SuperAgent } from "./agent.entity";
+import { Transaction } from "./transaction.entity";
 
 @Entity("user")
 export class User implements UserInterface {
     @PrimaryGeneratedColumn()
     id: string;
-
     @Column()
     first_name: string;
-
     @Column()
     last_name: string;
-
     @Column()
     username: string;
-
     @Column()
     password: string;
     @Column({nullable:true})
@@ -37,6 +34,8 @@ export class User implements UserInterface {
     refreshTokens: RefreshToken[];
     @OneToOne(()=>SuperAdmin,superr=>superr.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})
     super_admin?:SuperAdmin;
+    @OneToMany(()=>Transaction,(transaction)=>transaction.sender,{onDelete:"CASCADE"})
+    transaction?:Transaction[];
     @CreateDateColumn()
     created_at: Date
 }

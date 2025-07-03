@@ -10,6 +10,9 @@ import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { error } from "console";
 import { PaginationDto } from "../DTO/pagination.dto";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
+import { TransactionCreateDto } from "../database/type/transaction/transaction.interface";
+import { crteateTransaction } from "./transaction.controller";
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationStatus = await validateInput<AdminInterface>(adminSchema, req.body);
@@ -327,5 +330,57 @@ console.log(admins);
   } catch (error) {
     console.error("Error", error);
     next(new AppError("Internal server error", 500, "Operational"));
+  }
+};
+
+
+export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { admin_id, birrAmount } = req.body;
+    
+
+    const admin = await AdminRepository.getRepo().findById(admin_id);
+    const superAgent = await SuperAgentRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!superAgent) {
+      return res.status(404).json(createResponse("fail", "Agent not found", []));
+    }
+
+    if (!admin) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount=(100/Number(admin.fee_percentage)*birrAmount);
+    const body:TransactionCreateDto={
+      type:"send_package",
+      amount_in_birr:birrAmount,
+      amount_in_package:Number(packageAmount),
+      status:"completed",
+      sender_id:`${superAgent.user.id}`,
+      reciever_id:`${admin.user.id}`
+    }
+    
+    const updated_admin_package = Number(admin.package) + packageAmount;
+    const updated_super_agent_package = Number(superAgent.package) - packageAmount;
+    if (updated_super_agent_package < 0) {
+      return res.status(400).json(createResponse("fail", "Insufficient balance please recharge your account", []));
+    }
+    AdminRepository.getRepo().update(admin, { package: updated_admin_package });
+    SuperAgentRepository.getRepo().update(superAgent, { package: updated_super_agent_package })
+const createdTransaction=await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is",createdTransaction);
+
+    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
   }
 };

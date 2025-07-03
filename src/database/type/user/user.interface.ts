@@ -10,6 +10,7 @@ export interface UserInterface{
     username:string;
     password:string;
     role:string;
+
     status?:string;
     package?: number;
     total_earning?: number;
@@ -18,4 +19,5 @@ export interface UserInterface{
     // casher?:CasherInterface;
     admin?:AdminInterface;
     super_admin?:SuperInterface;
+    // transaction?:TransactionIn
 }

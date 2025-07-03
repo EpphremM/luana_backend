@@ -12,6 +12,7 @@ import { globalErrorHandler } from "./global/global.erro.handler";
 import { CartelaRoutes } from "./routes/cartela.routes";
 import { CardRoutes } from "./routes/card.routes";
 import { SuperAgentRoutes } from "./routes/super.agent.routes";
+import { TransactionRoutes } from "./routes/transaction.routes";
 
 class App {
     public app: Application;
@@ -30,7 +31,8 @@ class App {
         this.app.use(cors({
             origin: [
                 "https://abyssinia-bingo-hrse.onrender.com",
-                "https://abyssinia-bingo-hrse.onrender.com/",
+                "https://abyssinia-bingo-hrse.onrender.com",
+                "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
@@ -65,6 +67,7 @@ class App {
         const cardRoutes=new CardRoutes();
         const cartelaRoutes=new CartelaRoutes();
         const superAgentRoutes=new SuperAgentRoutes();
+        const transactionRoutes=new TransactionRoutes();
         
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
@@ -75,6 +78,7 @@ class App {
         this.app.use("/bingo/v1", authRoutes.router);
         this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
         this.app.use("/bingo/v1/super-agent", superAgentRoutes.router);
+        this.app.use("/bingo/v1/transaction", transactionRoutes.router);
         this.app.use(globalErrorHandler);
     }
 }

@@ -10,11 +10,13 @@ import { createResponse } from "../express/types/response.body";
 import { PaginationDto } from "../DTO/pagination.dto";
 import { superAgentSchema, updateSuperAgentSchema } from "../zod/schemas/super.agent.schema";
 import { AdminRepository } from "../database/repositories/admin.repository";
+import { crteateTransaction } from "./transaction.controller";
+import { TransactionCreateDto, TransactionInterface } from "../database/type/transaction/transaction.interface";
 
 export const signupSuperAgent = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationStatus = await validateInput<SuperAgentInterface>(superAgentSchema, req.body);
-console.log(validationStatus.errors);
+    console.log(validationStatus.errors);
     if (validationStatus.status !== "success") {
       return next(new AppError("Invalid Request", 400, "Operational"));
     }
@@ -133,44 +135,5 @@ export const deleteSuperAgent = async (req: Request, res: Response, next: NextFu
     res.status(200).json(createResponse("success", "Super Agent deleted successfully", []));
   } catch (error) {
     next(new AppError("Error deleting super agent", 500, "Operational", error));
-  }
-};
-export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const { admin_id, new_package } = req.body;
-
-    const admin = await AdminRepository.getRepo().findById(admin_id);
-    const superAgent = await SuperAgentRepository.getRepo().findById(id);
-
-    if (!new_package) {
-      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
-    }
-
-    if (!superAgent) {
-      return res.status(404).json(createResponse("fail", "Agent not found", []));
-    }
-
-    if (!admin) {
-      return res.status(404).json(createResponse("fail", "Admin not found", []));
-    }
-
-    const parsedNewPackage = Number(new_package);
-    if (isNaN(parsedNewPackage)) {
-      return res.status(400).json(createResponse("fail", "Invalid package value", []));
-    }
-
-
-    const updated_admin_package = Number(admin.package) + parsedNewPackage;
-    const updated_super_agent_package=Number(superAgent.package) - parsedNewPackage;
-    if(updated_super_agent_package<0){
-        return res.status(400).json(createResponse("fail", "Insufficient balance please recharge your account", []));
-    }
-    AdminRepository.getRepo().update(admin,{package:updated_admin_package});
-    SuperAgentRepository.getRepo().update(superAgent,{package:updated_super_agent_package})
-
-    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
-  } catch (error) {
-    next(new AppError("Error updating admin package", 500, "Operational", error));
   }
 };
