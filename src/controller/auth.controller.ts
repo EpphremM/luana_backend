@@ -1,4 +1,4 @@
-import { Request, Response,NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import {
   loginUser,
   refreshUserToken,
@@ -22,23 +22,23 @@ declare global {
   }
 }
 
-const setAuthCookies = (res:Response, accessToken: string, refreshToken: string): void => {
- const isProduction=ENV.node_env==="production";
-  
+const setAuthCookies = (res: Response, accessToken: string, refreshToken: string): void => {
+  const isProduction = ENV.node_env === "production";
+
   res.cookie('access_token', accessToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite:isProduction?"none":"lax",
+    sameSite: isProduction ? "none" : "lax",
     // domain: 'https://luana-bingo.vercel.app/',
-    path:"/",
+    path: "/",
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
   res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
     secure: isProduction,
-    sameSite:isProduction?"none":"lax",
-    path:"/",
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
     // domain: 'https://luana-bingo.vercel.app/', 
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -48,14 +48,14 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     const result = await loginUser(username, password, req);
-    console.log("Login result is",result);
+    console.log("Login result is", result);
     setAuthCookies(res, result.accessToken, result.refreshToken);
     console.log(result.accessToken);
-    
-    res.json(createResponse("success","User logged in successfully",result.user));
+
+    res.json(createResponse("success", "User logged in successfully", result.user));
   } catch (error) {
     console.log(error);
-    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed',[]));
+    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed', []));
   }
 };
 
@@ -68,27 +68,27 @@ export const refresh = async (req: Request, res: Response) => {
 
     const fingerprint = generateDeviceFingerprint(req);
     const result = await refreshUserToken(refreshToken, fingerprint);
-    
+
     setAuthCookies(res, result.accessToken, result.refreshToken);
-    
+
     res.json({ success: true });
   } catch (error) {
-    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Token refresh failed',[]));
+    res.status(401).json(createResponse("fail", error instanceof Error ? error.message : 'Token refresh failed', []));
   }
 };
 
 export const logout = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies['refresh_token'];
-    const isProduction=ENV.node_env==="production";
-    res.clearCookie('access_token', { httpOnly: true, secure: isProduction, sameSite:isProduction?"none":"lax" });
-    res.clearCookie('refresh_token', { httpOnly: true, secure: isProduction, sameSite: isProduction?"none":"lax" });
+    const isProduction = ENV.node_env === "production";
+    res.clearCookie('access_token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax" });
+    res.clearCookie('refresh_token', { httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax" });
     // if (refreshToken) {
     //   await logoutUser(refreshToken);
     // }
-    res.status(200).json({success: true });
+    res.status(200).json({ success: true });
   } catch (error) {
-    res.status(500).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed',[]));
+    res.status(500).json(createResponse("fail", error instanceof Error ? error.message : 'Login failed', []));
   }
 };
 
@@ -106,13 +106,12 @@ export const validateSession = async (req: Request, res: Response, next: NextFun
       return;
     }
 
-    // Now TypeScript knows decoded is an object with properties
     const currentFingerprint = generateDeviceFingerprint(req);
     if (decoded.fingerprint !== currentFingerprint) {
       next(new AppError("Device mismatch", 401, "Operational"));
       return;
     }
-
+    console.log("User from validation session is", decoded);
     res.status(200).json(
       createResponse("success", "Session valid", {
         user: {

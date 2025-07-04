@@ -8,6 +8,7 @@ export interface SuperAgentInterface {
   package: number;
   user: User;
   company: SuperAdmin;
+  fee_percentage:number;
   super_id?: string;
   created_at: Date;
 }

@@ -10,6 +10,6 @@ export class TransactionRoutes{
     private setRoutes(router:Router){
 router.route("/").post(createTransaction).get(getAllTransactions);
 router.route("/:id").get(getTransactionById).delete(deleteTransaction).patch(updateTransaction);
-router.route("/user:id").get(getTransactionsByUserId);
+router.route("/user/:id").get(getTransactionsByUserId);
     }
 }

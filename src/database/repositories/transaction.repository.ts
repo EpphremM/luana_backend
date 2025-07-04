@@ -7,7 +7,7 @@ export class TransactionRepository {
   transactionRepository = AppDataSource.getRepository<TransactionInterface>(Transaction);
   static transactionRepo: TransactionRepository | null = null;
 
-  private constructor() {}
+  private constructor() { }
   async register(transaction: TransactionInterface) {
     return await this.transactionRepository.save(transaction);
   }
@@ -21,7 +21,7 @@ export class TransactionRepository {
     const skip = (parsedPage - 1) * parsedLimit;
 
     const query = this.transactionRepository.createQueryBuilder("transaction")
-      .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.reciever","reciverUser");
+      .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.reciever", "reciverUser");
 
     const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
     const totalPages = Math.ceil(total / parsedLimit);
@@ -40,14 +40,17 @@ export class TransactionRepository {
     };
   }
   async findByUserId(user_id: string, pagination: PaginationDto) {
+    console.log("User id os",user_id);
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));
     const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
     const skip = (parsedPage - 1) * parsedLimit;
 
-    const query = this.transactionRepository.createQueryBuilder("transaction")
-      .where({ user_id })
-      .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.sender","recieverUser");
+   const query = this.transactionRepository.createQueryBuilder("transaction")
+  .leftJoinAndSelect("transaction.sender", "senderUser")
+  .leftJoinAndSelect("transaction.reciever", "recieverUser")
+  .where("transaction.sender_id = :userId", { userId: user_id })
+  .orWhere("transaction.reciever_id = :userId", { userId: user_id });
 
     const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
     const totalPages = Math.ceil(total / parsedLimit);

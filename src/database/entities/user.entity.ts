@@ -20,22 +20,25 @@ export class User implements UserInterface {
     username: string;
     @Column()
     password: string;
-    @Column({nullable:true})
-    phone:string;
+    @Column({ nullable: true })
+    phone: string;
     @Column({ type: "enum", enum: UserRole })
     role: UserRole;
-    @OneToOne(() => Casher,casher=>casher.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})
-    casher?:Casher;
-    @OneToOne(() => Admin, admin => admin.user,{cascade:true})
+    @OneToOne(() => Casher, casher => casher.user, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+    casher?: Casher;
+    @OneToOne(() => Admin, admin => admin.user, { cascade: true })
     admin?: Admin;
-     @OneToOne(() => SuperAgent, agent => agent.user,{cascade:true})
+    @OneToOne(() => SuperAgent, agent => agent.user, { cascade: true })
     super_agent?: SuperAgent;
-    @OneToMany(() => RefreshToken, (token) => token.user,{onDelete:"CASCADE",onUpdate:'CASCADE'})
+    @OneToMany(() => RefreshToken, (token) => token.user, { onDelete: "CASCADE", onUpdate: 'CASCADE' })
     refreshTokens: RefreshToken[];
-    @OneToOne(()=>SuperAdmin,superr=>superr.user,{onDelete:"CASCADE",onUpdate:"CASCADE"})
-    super_admin?:SuperAdmin;
-    @OneToMany(()=>Transaction,(transaction)=>transaction.sender,{onDelete:"CASCADE"})
-    transaction?:Transaction[];
+    @OneToOne(() => SuperAdmin, superr => superr.user, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+    super_admin?: SuperAdmin;
+    @OneToMany(() => Transaction, (transaction) => transaction.sender)
+    sentTransactions: Transaction[];
+
+    @OneToMany(() => Transaction, (transaction) => transaction.reciever)
+    receivedTransactions: Transaction[];
     @CreateDateColumn()
     created_at: Date
 }

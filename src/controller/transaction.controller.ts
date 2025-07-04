@@ -6,6 +6,10 @@ import { createResponse } from "../express/types/response.body";
 import { PaginationDto } from "../DTO/pagination.dto";
 import { TransactionCreateDto, TransactionInterface } from "../database/type/transaction/transaction.interface";
 import { transactionSchema, updateTransactionSchema } from "../zod/schemas/transaction.schema";
+import { AdminRepository } from "../database/repositories/admin.repository";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
+import { CompanyRepository } from "../database/repositories/company.repository";
+import { UserRepository } from "../database/repositories/user.repository";
 
 export const createTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,7 +30,7 @@ export const createTransaction = async (req: Request, res: Response, next: NextF
 export const getAllTransactions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const pagination: PaginationDto = req.query;
-       
+
         const transactions = await TransactionRepository.getRepo().find(pagination);
 
         res.status(200).json(createResponse("success", "Transactions fetched successfully", transactions));
@@ -37,12 +41,17 @@ export const getAllTransactions = async (req: Request, res: Response, next: Next
 
 export const getTransactionsByUserId = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { user_id } = req.params;
+        const { id } = req.params;
+        const user=await UserRepository.getRepo().findById(id);
+        if(!user){
+            return next(new AppError("User not found", 400));
+        }
         const pagination: PaginationDto = req.query;
-        const transactions = await TransactionRepository.getRepo().findByUserId(user_id, pagination);
+        const transactions = await TransactionRepository.getRepo().findByUserId(id, pagination);
 
         res.status(200).json(createResponse("success", "User transactions fetched successfully", transactions));
     } catch (error) {
+        console.log
         next(new AppError("Error fetching user transactions", 500, "Operational", error));
     }
 };
@@ -113,3 +122,4 @@ export const crteateTransaction = async (body: TransactionCreateDto) => {
         console.log("Error occured during creating transaction", error);
     }
 }
+

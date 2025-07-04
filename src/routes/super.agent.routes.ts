@@ -5,7 +5,7 @@ import {
   getSuperAgentById,
   updateSuperAgent,
   deleteSuperAgent,
-  topUpForAdmins
+  topUpForAdmins,
 } from "../controller/super.agent.controller";
 import { requireRole } from "../utils/role.middleware";
 import { UserRole } from "../database/enum/role.enum";
@@ -25,6 +25,6 @@ export class SuperAgentRoutes {
       .get(getSuperAgentById)
       .patch(updateSuperAgent)
       .delete(requireRole(UserRole.Company), deleteSuperAgent);
-      this.router.route("/topup/:id").post(topUpForAdmins);
+       this.router.route("/topup/:id").post(topUpForAdmins);
   }
 }

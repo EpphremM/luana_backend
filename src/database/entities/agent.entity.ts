@@ -17,6 +17,8 @@ user: User;
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
 @JoinColumn({name:"super_id"})
 company:SuperAdmin;
+@Column({default:3})
+fee_percentage:number
 @Column({nullable:true})
 super_id:string;
 @CreateDateColumn()

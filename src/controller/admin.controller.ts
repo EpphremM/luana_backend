@@ -10,9 +10,6 @@ import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { error } from "console";
 import { PaginationDto } from "../DTO/pagination.dto";
-import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
-import { TransactionCreateDto } from "../database/type/transaction/transaction.interface";
-import { crteateTransaction } from "./transaction.controller";
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationStatus = await validateInput<AdminInterface>(adminSchema, req.body);
@@ -23,22 +20,14 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const { admin, password, confirm_password, username, first_name, last_name, phone } = req.body;
-
-    // Check if the passwords match
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
     }
-
-    // Check if the username already exists
     const existingUser = await UserRepository.getRepo().findByUsername(username);
     if (existingUser) {
       return next(new AppError("User already registered", 400, "OperationalError"));
     }
-
-    // Hash the password before saving
     const hashedPassword = await hashPassword(password);
-
-    // 1️⃣ Create and save the User first
     const user = await UserRepository.getRepo().register({
       first_name,
       last_name,
@@ -48,13 +37,10 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       role: UserRole.Admin,
     });
 
-    // 2️⃣ Create the associated Admin
     const newAdmin = await AdminRepository.getRepo().register({
       ...admin,
       user,
     });
-
-    // Respond with a success message
     res.status(201).json(createResponse("success", "Admin signup completed successfully", newAdmin));
   } catch (error) {
     console.error(error);
@@ -264,16 +250,11 @@ export const AdminEarnings = async (req: Request, res: Response, next: NextFunct
 
 export const admin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Last 15 days calculation
     const fifteenDaysAgo = new Date();
-    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
-
-    // Get all admins with their cashiers and games
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); 
     const admins = await AdminRepository.getRepo().findll()
 console.log(admins);
-    // Process each admin
     const report = admins.map(admin => {
-      // Initialize 15-day structure
       const dailyBreakdown = [];
       for (let i = 0; i < 15; i++) {
         const date = new Date(fifteenDaysAgo);
@@ -288,8 +269,6 @@ console.log(admins);
 
       let totalEarnings = 0;
       let totalAdminShare = 0;
-
-      // Process each cashier's games
       admin.cashers?.forEach(cashier => {
         cashier.game?.forEach(game => {
           const gameDate = new Date(game.created_at);
@@ -334,53 +313,66 @@ console.log(admins);
 };
 
 
-export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
+export const oneAdmin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const { admin_id, birrAmount } = req.body;
-    
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); 
+    const admins = await AdminRepository.getRepo().findll()
+console.log(admins);
+    const report = admins.map(admin => {
+      const dailyBreakdown = [];
+      for (let i = 0; i < 15; i++) {
+        const date = new Date(fifteenDaysAgo);
+        date.setDate(date.getDate() + i);
+        
+        dailyBreakdown.push({
+          date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+          amount: 0
+        });
+      }
 
-    const admin = await AdminRepository.getRepo().findById(admin_id);
-    const superAgent = await SuperAgentRepository.getRepo().findById(id);
+      let totalEarnings = 0;
+      let totalAdminShare = 0;
+      admin.cashers?.forEach(cashier => {
+        cashier.game?.forEach(game => {
+          const gameDate = new Date(game.created_at);
+          const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+          
+          const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
+          if (dayEntry) {
+            const adminPrice = typeof game.admin_price === 'string' 
+              ? parseFloat(game.admin_price) 
+              : Number(game.admin_price) || 0;
+            
+            dayEntry.amount += adminPrice;
+            totalAdminShare += adminPrice;
+            totalEarnings += (game.player_bet * game.total_player);
+          }
+        });
+      });
 
-    if (!birrAmount) {
-      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
-    }
+      return {
+        id: admin.id,
+        first_name: admin.user?.first_name,
+        last_name: admin.user?.last_name,
+        total_cashiers: admin.cashers?.length || 0,
+        total_earnings: totalEarnings,
+        admin_share: totalAdminShare,
+        daily_breakdown: dailyBreakdown.map(day => ({
+          ...day,
+          amount: Number(day.amount.toFixed(2))
+        }))
+      };
+    });
 
-    if (!superAgent) {
-      return res.status(404).json(createResponse("fail", "Agent not found", []));
-    }
+    res.status(200).json({ 
+      status: 'success',
+      data: report
+    });
 
-    if (!admin) {
-      return res.status(404).json(createResponse("fail", "Admin not found", []));
-    }
-
-    const parsedNewPackage = Number(birrAmount);
-    if (isNaN(parsedNewPackage)) {
-      return res.status(400).json(createResponse("fail", "Invalid package value", []));
-    }
-    const packageAmount=(100/Number(admin.fee_percentage)*birrAmount);
-    const body:TransactionCreateDto={
-      type:"send_package",
-      amount_in_birr:birrAmount,
-      amount_in_package:Number(packageAmount),
-      status:"completed",
-      sender_id:`${superAgent.user.id}`,
-      reciever_id:`${admin.user.id}`
-    }
-    
-    const updated_admin_package = Number(admin.package) + packageAmount;
-    const updated_super_agent_package = Number(superAgent.package) - packageAmount;
-    if (updated_super_agent_package < 0) {
-      return res.status(400).json(createResponse("fail", "Insufficient balance please recharge your account", []));
-    }
-    AdminRepository.getRepo().update(admin, { package: updated_admin_package });
-    SuperAgentRepository.getRepo().update(superAgent, { package: updated_super_agent_package })
-const createdTransaction=await crteateTransaction(body)
-    console.log("Created transaction is that happens by super agent tops up for admins is",createdTransaction);
-
-    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
   } catch (error) {
-    next(new AppError("Error updating admin package", 500, "Operational", error));
+    console.error("Error", error);
+    next(new AppError("Internal server error", 500, "Operational"));
   }
 };

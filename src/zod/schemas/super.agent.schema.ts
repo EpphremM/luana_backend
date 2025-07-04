@@ -6,8 +6,6 @@ const superAgentDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted),
   package: z.number().positive(),
 });
-
-// Create schema for SuperAgent signup
 export const superAgentSchema = z.object({
   super_agent: superAgentDetailsSchema,
   first_name: z.string().min(1, "First name is required"),
@@ -41,6 +39,7 @@ export const updateSuperAgentSchema = z.object({
   }, {
     message: "Invalid phone number format"
   }).optional(),
+  fee_percentage: z.number().positive().optional(),
   password: z.string().min(8).optional(),
   confirm_password: z.string().optional(),
 }).refine((data) => !data.password || data.password === data.confirm_password, {

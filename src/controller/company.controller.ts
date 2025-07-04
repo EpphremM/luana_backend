@@ -8,6 +8,10 @@ import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
+import { TransactionCreateDto } from "../database/type/transaction/transaction.interface";
+import { crteateTransaction } from "./transaction.controller";
+import { AdminRepository } from "../database/repositories/admin.repository";
 
 export const signup = async (
   req: Request,
@@ -230,13 +234,13 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
     );
     const now = new Date();
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    
+
     const weekStart = new Date(todayStart);
     weekStart.setUTCDate(todayStart.getUTCDate() - (todayStart.getUTCDay() || 7) + 1);
-    
-    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1)); 
+
+    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
     const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
-    
+
     const filterByDate = (games: any[], startDate: Date) =>
       games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
     const calculateEarnings = (games: any[]) =>
@@ -271,5 +275,99 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     console.log("Error calculating company earnings:", error);
     next(new AppError("Failed to calculate company metrics", 500, "Operational", error));
+  }
+};
+
+
+export const topUpForSuperAgents = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { agent_id, birrAmount } = req.body;
+
+
+    const superAgent = await SuperAgentRepository.getRepo().findById(agent_id);
+    const company = await CompanyRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!company) {
+      return res.status(404).json(createResponse("fail", "Company not found", []));
+    }
+
+    if (!superAgent) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount = Math.round((100 / Number(superAgent.fee_percentage) * birrAmount));
+    const body: TransactionCreateDto = {
+      type: "send_package",
+      amount_in_birr: birrAmount,
+      amount_in_package: Number(packageAmount),
+      status: "completed",
+      sender_id: `${company.user.id}`,
+      reciever_id: `${superAgent.user.id}`
+    }
+
+    const updated_superAgent_package = Number(superAgent.package) + packageAmount;
+    SuperAgentRepository.getRepo().update(superAgent, { package: updated_superAgent_package });
+    const createdTransaction = await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+
+    res.status(200).json(createResponse("success", "Super agent information updated successfully", superAgent));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
+  }
+};
+
+
+export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { admin_id, birrAmount } = req.body;
+
+
+    const admin = await AdminRepository.getRepo().findById(admin_id);
+    const company = await SuperAgentRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!company) {
+      return res.status(404).json(createResponse("fail", "Company not found", []));
+    }
+
+    if (!admin) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount = Math.floor((100 / Number(admin.fee_percentage) * birrAmount));
+    const body: TransactionCreateDto = {
+      type: "send_package",
+      amount_in_birr: birrAmount,
+      amount_in_package: Number(packageAmount),
+      status: "completed",
+      sender_id: `${company.user.id}`,
+      reciever_id: `${admin.user.id}`
+    }
+
+    const updated_admin_package = Number(admin.package) + packageAmount;
+    AdminRepository.getRepo().update(admin, { package: updated_admin_package });
+
+  const createdTransaction = await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
   }
 };

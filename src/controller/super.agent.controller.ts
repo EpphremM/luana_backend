@@ -137,3 +137,53 @@ export const deleteSuperAgent = async (req: Request, res: Response, next: NextFu
     next(new AppError("Error deleting super agent", 500, "Operational", error));
   }
 };
+export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { admin_id, birrAmount } = req.body;
+    
+
+    const admin = await AdminRepository.getRepo().findById(admin_id);
+    const superAgent = await SuperAgentRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!superAgent) {
+      return res.status(404).json(createResponse("fail", "Agent not found", []));
+    }
+
+    if (!admin) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount=(100/Number(admin.fee_percentage)*birrAmount);
+    const body:TransactionCreateDto={
+      type:"send_package",
+      amount_in_birr:birrAmount,
+      amount_in_package:Number(packageAmount),
+      status:"completed",
+      sender_id:`${superAgent.user.id}`,
+      reciever_id:`${admin.user.id}`
+    }
+    
+    const updated_admin_package = Number(admin.package) + packageAmount;
+    const updated_super_agent_package = Number(superAgent.package) - packageAmount;
+    if (updated_super_agent_package < 0) {
+      return res.status(400).json(createResponse("fail", "Insufficient balance please recharge your account", []));
+    }
+    AdminRepository.getRepo().update(admin, { package: updated_admin_package });
+    SuperAgentRepository.getRepo().update(superAgent, { package: updated_super_agent_package })
+const createdTransaction=await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is",createdTransaction);
+
+    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
+  }
+};

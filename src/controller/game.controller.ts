@@ -147,8 +147,8 @@ const getExistingAdminIncomes = async (admin_id: string, gameProfit: number) => 
             fee_percentage,
             admin_price,
             updated_total_earning: parseFloat((total_earning + gameProfit).toFixed(2)),
-            updated_net_earning: parseFloat((net_earning + (gameProfit * (100 - fee_percentage) / 100)).toFixed(2)),
-            updated_package: parseFloat((packagge - ((gameProfit * fee_percentage) / 100)).toFixed(2)),
+            updated_net_earning: parseFloat((net_earning )+ (gameProfit).toFixed(2)),
+            updated_package: parseFloat((packagge - ((gameProfit))).toFixed(2)),
         };
     } catch (error) {
         console.error("Error getting admin incomes:", error);
