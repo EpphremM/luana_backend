@@ -15,59 +15,63 @@ export class TransactionRepository {
     return await this.transactionRepository.save(transaction);
   }
   async find(pagination: PaginationDto) {
-    const { page = 1, limit = 10 } = pagination;
-    const parsedPage = Math.max(1, Number(page));
-    const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
-    const skip = (parsedPage - 1) * parsedLimit;
+  const { page = 1, limit = 10 } = pagination;
+  const parsedPage = Math.max(1, Number(page));
+  const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
+  const skip = (parsedPage - 1) * parsedLimit;
 
-    const query = this.transactionRepository.createQueryBuilder("transaction")
-      .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.reciever", "reciverUser");
+  const query = this.transactionRepository.createQueryBuilder("transaction")
+    .leftJoinAndSelect("transaction.sender", "senderUser")
+    .leftJoinAndSelect("transaction.reciever", "reciverUser")
+    .orderBy("transaction.created_at", "DESC");
 
-    const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
-    const totalPages = Math.ceil(total / parsedLimit);
+  const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
+  const totalPages = Math.ceil(total / parsedLimit);
 
-    return {
-      data: transactions,
-      pagination: {
-        totalItems: total,
-        itemCount: transactions.length,
-        itemsPerPage: parsedLimit,
-        totalPages,
-        currentPage: parsedPage,
-        hasNextPage: parsedPage < totalPages,
-        hasPreviousPage: parsedPage > 1,
-      }
-    };
-  }
+  return {
+    data: transactions,
+    pagination: {
+      totalItems: total,
+      itemCount: transactions.length,
+      itemsPerPage: parsedLimit,
+      totalPages,
+      currentPage: parsedPage,
+      hasNextPage: parsedPage < totalPages,
+      hasPreviousPage: parsedPage > 1,
+    }
+  };
+}
+
   async findByUserId(user_id: string, pagination: PaginationDto) {
-    console.log("User id os",user_id);
-    const { page = 1, limit = 10 } = pagination;
-    const parsedPage = Math.max(1, Number(page));
-    const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
-    const skip = (parsedPage - 1) * parsedLimit;
+  const { page = 1, limit = 10 } = pagination;
+  const parsedPage = Math.max(1, Number(page));
+  const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
+  const skip = (parsedPage - 1) * parsedLimit;
 
-   const query = this.transactionRepository.createQueryBuilder("transaction")
-  .leftJoinAndSelect("transaction.sender", "senderUser")
-  .leftJoinAndSelect("transaction.reciever", "recieverUser")
-  .where("transaction.sender_id = :userId", { userId: user_id })
-  .orWhere("transaction.reciever_id = :userId", { userId: user_id });
+  const query = this.transactionRepository.createQueryBuilder("transaction")
+    .leftJoinAndSelect("transaction.sender", "senderUser")
+    .leftJoinAndSelect("transaction.reciever", "recieverUser")
+    .where("transaction.sender_id = :userId", { userId: user_id })
+    .orWhere("transaction.reciever_id = :userId", { userId: user_id })
+    .orderBy("transaction.created_at", "DESC");
 
-    const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
-    const totalPages = Math.ceil(total / parsedLimit);
+  const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
+  const totalPages = Math.ceil(total / parsedLimit);
 
-    return {
-      data: transactions,
-      pagination: {
-        totalItems: total,
-        itemCount: transactions.length,
-        itemsPerPage: parsedLimit,
-        totalPages,
-        currentPage: parsedPage,
-        hasNextPage: parsedPage < totalPages,
-        hasPreviousPage: parsedPage > 1,
-      }
-    };
-  }
+  return {
+    data: transactions,
+    pagination: {
+      totalItems: total,
+      itemCount: transactions.length,
+      itemsPerPage: parsedLimit,
+      totalPages,
+      currentPage: parsedPage,
+      hasNextPage: parsedPage < totalPages,
+      hasPreviousPage: parsedPage > 1,
+    }
+  };
+}
+
 
   async findById(id: string) {
     return await this.transactionRepository.findOne({

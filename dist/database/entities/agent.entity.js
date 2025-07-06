@@ -40,6 +40,10 @@ __decorate([
     __metadata("design:type", company_entity_1.SuperAdmin)
 ], SuperAgent.prototype, "company", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: 3 }),
+    __metadata("design:type", Number)
+], SuperAgent.prototype, "fee_percentage", void 0);
+__decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], SuperAgent.prototype, "super_id", void 0);

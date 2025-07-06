@@ -86,12 +86,12 @@ const validateSession = async (req, res, next) => {
             next(new app_error_1.AppError("Invalid token", 401, "Operational"));
             return;
         }
-        // Now TypeScript knows decoded is an object with properties
         const currentFingerprint = (0, auth_service_1.generateDeviceFingerprint)(req);
         if (decoded.fingerprint !== currentFingerprint) {
             next(new app_error_1.AppError("Device mismatch", 401, "Operational"));
             return;
         }
+        console.log("User from validation session is", decoded);
         res.status(200).json((0, response_body_1.createResponse)("success", "Session valid", {
             user: {
                 userId: decoded.userId,

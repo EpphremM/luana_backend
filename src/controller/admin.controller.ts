@@ -10,6 +10,7 @@ import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { error } from "console";
 import { PaginationDto } from "../DTO/pagination.dto";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationStatus = await validateInput<AdminInterface>(adminSchema, req.body);
@@ -67,10 +68,8 @@ export const getOne = async (req: Request, res: Response, next: NextFunction) =>
     if (!admin) {
       return next(new AppError("User not found", 400, "Operational"))
     }
-    // console.log(admin); 
     res.status(200).json(createResponse("success", "Admin fetched successfully", admin));
   } catch (error) {
-    // console.log(error);
     return next(new AppError("Error occured. please try again", 400, "Operationsl"));
   }
 }
@@ -82,7 +81,6 @@ export const update = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    // Make sure to load the user relation
     const existingAdmin = await AdminRepository.getRepo().findById(id);
 
     if (!existingAdmin) {
@@ -90,10 +88,7 @@ export const update = async (
       return;
     }
 
-    // Separate the update data
     const { password, confirm_password, first_name, last_name, phone, username, ...adminData } = req.body;
-
-    // Prepare user updates
     const userUpdates = {
       first_name,
       last_name,
@@ -101,19 +96,24 @@ export const update = async (
       phone,
       password
     };
-    console.log("Existing admin", existingAdmin);
+    let superAgent;
+    if (adminData.admin.super_agent_id) {
+      superAgent = await SuperAgentRepository.getRepo().findById(adminData.admin.super_agent_id);
+      existingAdmin.super_agent = superAgent;
+    }
+    if (adminData.admin.super_agent_id == null) {
+      existingAdmin.super_agent = null;
+    }
 
-    // Prepare admin updates - ensure we're using the nested admin data if provided
     const adminUpdates = {
       status: adminData.admin?.status ?? existingAdmin.status,
       total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
       net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
       package: adminData.admin?.package ?? Number(existingAdmin.package),
       fee_percentage: adminData.admin?.fee_percentage ?? Number(existingAdmin.fee_percentage),
+      super_agent_id: adminData.admin?.super_agent_id ?? existingAdmin.super_agent_id,
       cartela_id: adminData.admin?.cartela_id ?? existingAdmin.cartela_id
     };
-
-    // Validate admin updates
     const adminValidation = await validateInput(updateAdminSchema, { admin: adminUpdates });
     if (adminValidation.status !== "success") {
       res.status(400).json({
@@ -123,16 +123,13 @@ export const update = async (
       });
       return;
     }
-
-    // Apply updates - do this carefully field by field
     existingAdmin.status = adminUpdates.status;
     existingAdmin.total_earning = adminUpdates.total_earning;
     existingAdmin.net_earning = adminUpdates.net_earning;
     existingAdmin.package = adminUpdates.package;
     existingAdmin.fee_percentage = adminUpdates.fee_percentage;
     existingAdmin.cartela_id = adminUpdates.cartela_id;
-
-    // Update user fields
+    existingAdmin.super_agent_id = adminUpdates.super_agent_id;
     if (existingAdmin.user) {
       if (userUpdates.first_name) existingAdmin.user.first_name = userUpdates.first_name;
       if (userUpdates.last_name) existingAdmin.user.last_name = userUpdates.last_name;
@@ -142,12 +139,14 @@ export const update = async (
     }
 
     // Save the changes - make sure your repository's saveWithUser method is working
+
+    console.log("Existing admin data is", existingAdmin);
     const updatedAdmin = await AdminRepository.getRepo().saveWithUser(existingAdmin);
 
-    // Verify the update
+    console.log("Updated admin data is", updatedAdmin);
+
     const persistedAdmin = await AdminRepository.getRepo().findById(id);
 
-    // Return clean response
     res.status(200).json({
       status: "success",
       message: "Admin updated successfully",
@@ -164,6 +163,7 @@ export const update = async (
           username: persistedAdmin.user?.username,
           phone: persistedAdmin.user?.phone,
           cartela_id: persistedAdmin.cartela_id,
+          super_agent_id: persistedAdmin.super_agent_id,
           updated_at: new Date()
         }
       }
@@ -212,15 +212,15 @@ export const AdminEarnings = async (req: Request, res: Response, next: NextFunct
     );
     const now = new Date();
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    
+
     const weekStart = new Date(todayStart);
     weekStart.setUTCDate(todayStart.getUTCDate() - (todayStart.getUTCDay() || 7) + 1);
-    
-    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1)); 
-    const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1)); 
-    
+
+    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
+    const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
+
     const filterByDate = (games: any[], startDate: Date) =>
-      games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime()); 
+      games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
     const calculateEarnings = (games: any[]) =>
       games.reduce((total, game) =>
         total + (game.total_player * game.player_bet) - parseFloat(game.derash),
@@ -251,15 +251,15 @@ export const AdminEarnings = async (req: Request, res: Response, next: NextFunct
 export const admin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const fifteenDaysAgo = new Date();
-    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); 
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
     const admins = await AdminRepository.getRepo().findll()
-console.log(admins);
+    console.log(admins);
     const report = admins.map(admin => {
       const dailyBreakdown = [];
       for (let i = 0; i < 15; i++) {
         const date = new Date(fifteenDaysAgo);
         date.setDate(date.getDate() + i);
-        
+
         dailyBreakdown.push({
           date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
           day: date.toLocaleDateString('en-US', { weekday: 'long' }),
@@ -273,13 +273,13 @@ console.log(admins);
         cashier.game?.forEach(game => {
           const gameDate = new Date(game.created_at);
           const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-          
+
           const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
           if (dayEntry) {
-            const adminPrice = typeof game.admin_price === 'string' 
-              ? parseFloat(game.admin_price) 
+            const adminPrice = typeof game.admin_price === 'string'
+              ? parseFloat(game.admin_price)
               : Number(game.admin_price) || 0;
-            
+
             dayEntry.amount += adminPrice;
             totalAdminShare += adminPrice;
             totalEarnings += (game.player_bet * game.total_player);
@@ -301,7 +301,7 @@ console.log(admins);
       };
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       status: 'success',
       data: report
     });
@@ -312,19 +312,21 @@ console.log(admins);
   }
 };
 
+export const refundGame=async(req:Request,res:Response,next:NextFunction)=>{
 
+}
 export const oneAdmin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const fifteenDaysAgo = new Date();
-    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); 
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
     const admins = await AdminRepository.getRepo().findll()
-console.log(admins);
+    console.log(admins);
     const report = admins.map(admin => {
       const dailyBreakdown = [];
       for (let i = 0; i < 15; i++) {
         const date = new Date(fifteenDaysAgo);
         date.setDate(date.getDate() + i);
-        
+
         dailyBreakdown.push({
           date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
           day: date.toLocaleDateString('en-US', { weekday: 'long' }),
@@ -338,13 +340,13 @@ console.log(admins);
         cashier.game?.forEach(game => {
           const gameDate = new Date(game.created_at);
           const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-          
+
           const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
           if (dayEntry) {
-            const adminPrice = typeof game.admin_price === 'string' 
-              ? parseFloat(game.admin_price) 
+            const adminPrice = typeof game.admin_price === 'string'
+              ? parseFloat(game.admin_price)
               : Number(game.admin_price) || 0;
-            
+
             dayEntry.amount += adminPrice;
             totalAdminShare += adminPrice;
             totalEarnings += (game.player_bet * game.total_player);
@@ -366,7 +368,7 @@ console.log(admins);
       };
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       status: 'success',
       data: report
     });
@@ -376,3 +378,21 @@ console.log(admins);
     next(new AppError("Internal server error", 500, "Operational"));
   }
 };
+
+export const getAdminsBySuperAgent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { superAgentId } = req.params;
+    const pagination: PaginationDto = req.query as unknown as PaginationDto;
+
+    const result = await AdminRepository.getRepo().findBySuperAgent(superAgentId, pagination);
+
+    res.status(200).json(
+      createResponse("success", "Admins under super agent fetched successfully", result)
+    );
+  } catch (error) {
+    console.error("Error fetching admins by super agent:", error);
+    next(new AppError("Failed to fetch admins", 500, "Operational"));
+  }
+};
+
+

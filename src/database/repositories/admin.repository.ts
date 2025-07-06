@@ -23,17 +23,19 @@ export class AdminRepository {
     return await this.adminRepository.findOneBy({ id });
   }
   async findll(){
-    return await this.adminRepository.find({relations: ["user", "cashers", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"]});
+    return await this.adminRepository.find({relations: ["user", "cashers","super_agent", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"]});
   }
   async find(pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));
-    const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit)))); // Enforce reasonable limits
+    const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit)))); 
     const skip = (parsedPage - 1) * parsedLimit;
     const query = this.adminRepository.createQueryBuilder('admin')
       .leftJoinAndSelect('admin.cashers', 'casher')
       .leftJoinAndSelect('admin.company', 'company')
       .leftJoinAndSelect('admin.user', 'user')
+      .leftJoinAndSelect('admin.super_agent', 'super-agent')
+      .leftJoinAndSelect('casher.game', 'game')
       .leftJoinAndSelect('admin.cartela', 'cartela')
     const [admins, total] = await query
       .take(Number(parsedLimit))
@@ -57,7 +59,7 @@ export class AdminRepository {
   async findById(id: string) {
     const admin = await this.adminRepository.findOne({
       where: { id },
-      relations: ["user", "cashers", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"],
+      relations: ["user", "cashers","super_agent", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"],
     });
     return admin;
   }
@@ -94,8 +96,6 @@ export class AdminRepository {
       if (admin.user) {
         await queryRunner.manager.save(admin.user);
       }
-
-      // Then save admin
       const result = await queryRunner.manager.save(admin);
 
       await queryRunner.commitTransaction();
@@ -107,6 +107,7 @@ export class AdminRepository {
       await queryRunner.release();
     }
   }
+  
   async deleteWithUser(admin): Promise<void> {
     const queryRunner = this.adminRepository.manager.connection.createQueryRunner();
 
@@ -130,9 +131,48 @@ export class AdminRepository {
       await queryRunner.release();
     }
   }
+
+  async findBySuperAgent(superAgentId: string, pagination: PaginationDto) {
+  const { page = 1, limit = 10 } = pagination;
+  const parsedPage = Math.max(1, Number(page));
+  const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const query = this.adminRepository.createQueryBuilder("admin")
+    .leftJoinAndSelect("admin.cashers", "casher")
+    .leftJoinAndSelect("admin.company", "company")
+    .leftJoinAndSelect("admin.user", "user")
+    .leftJoinAndSelect("admin.super_agent", "super_agent")
+    .leftJoinAndSelect("admin.cartela", "cartela")
+    .where("admin.super_agent_id = :superAgentId", { superAgentId }) 
+
+  const [admins, total] = await query
+    .skip(skip)
+    .take(parsedLimit)
+    .getManyAndCount();
+
+  const totalPages = Math.ceil(total / parsedLimit);
+
+  return {
+    data: admins,
+    pagination: {
+      totalItems: total,
+      itemCount: admins.length,
+      itemsPerPage: parsedLimit,
+      totalPages,
+      currentPage: parsedPage,
+      hasNextPage: parsedPage < totalPages,
+      hasPreviousPage: parsedPage > 1,
+    }
+  };
+}
+
+
+
   static getRepo() {
     if (!AdminRepository.userRepo)
       AdminRepository.userRepo = new AdminRepository();
     return AdminRepository.userRepo;
   }
 }
+

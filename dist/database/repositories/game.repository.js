@@ -11,10 +11,8 @@ class GameRepository {
         return await this.gameRepository.save(game);
     }
     async findGameByCasherId(casher_id, pagination) {
-        // const casher= await CasherRepository.getRepo().findById(casher_id);
         const { page = 1, limit = 10 } = pagination;
         const query = this.gameRepository.createQueryBuilder('game').where({ casher_id: casher_id });
-        // return casher.game;
         const parsedPage = Math.max(1, Number(page));
         const parsedLimit = Number(Math.min(100, Math.max(1, Number(limit))));
         const skip = (parsedPage - 1) * parsedLimit;
@@ -47,7 +45,6 @@ class GameRepository {
             .take(Number(parsedLimit))
             .skip(skip)
             .getManyAndCount();
-        // Calculate total pages
         const totalPages = Math.ceil(total / parsedLimit);
         return {
             data: games,

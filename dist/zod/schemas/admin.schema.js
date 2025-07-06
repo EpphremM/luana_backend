@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateAdminSchema = exports.adminSchema = void 0;
 const zod_1 = require("zod");
 const permission_enum_1 = require("../../database/enum/permission.enum");
-// Define schema for the "admin" section
 const adminDetailsSchema = zod_1.z.object({
     status: zod_1.z.nativeEnum(permission_enum_1.PermissionStatus).default(permission_enum_1.PermissionStatus.Pemitted),
     total_earning: zod_1.z.number().optional(),

@@ -202,38 +202,40 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
 
     const completedGames = cashier.game.filter(game => game.status === "completed");
     const now = new Date();
+
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const weekStart = new Date(todayStart);
     const dayOfWeek = todayStart.getUTCDay();
     weekStart.setUTCDate(todayStart.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
     const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
     const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
-    
+
+    const twoDaysAgo = new Date(todayStart);
+    twoDaysAgo.setUTCDate(todayStart.getUTCDate() - 2);
+
     const filterByDate = (games: any[], startDate: Date) =>
-        games.filter(game => new Date(game.created_at) >= startDate);
-    
-    // Or more precise UTC comparison:
-    const filterByDateUTC = (games: any[], startDate: Date) =>
-        games.filter(game => {
-            const gameDate = new Date(game.created_at);
-            return gameDate >= startDate;
-        });
-    const calculateEarnings = (games: any[]) => 
-      games.reduce((total, game) => 
-        total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
+      games.filter(game => new Date(game.created_at) >= startDate);
+
+    const calculateEarnings = (games: any[]) =>
+      games.reduce((total, game) =>
+        total + (game.total_player * game.player_bet) - parseFloat(game.derash),
       0);
-    const earnings = {
-      first_name:cashier.user.first_name,
-      last_name:cashier.user.last_name,
-      status:cashier.status,
-      games:cashier?.game,
-      package:cashier?.admin?.package,
-      today: calculateEarnings(filterByDate(completedGames, todayStart)),
-      thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
-      thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
-      thisYear: calculateEarnings(filterByDate(completedGames, yearStart)),
-      allTime: calculateEarnings(completedGames)
-    }; 
+
+   const earnings = {
+  first_name: cashier.user.first_name,
+  last_name: cashier.user.last_name,
+  status: cashier.status,
+  games: filterByDate(completedGames, twoDaysAgo).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  ),
+  package: cashier?.admin?.package,
+  today: calculateEarnings(filterByDate(completedGames, todayStart)),
+  thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
+  thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
+  thisYear: calculateEarnings(filterByDate(completedGames, yearStart)),
+  allTime: calculateEarnings(completedGames)
+};
+
 
     res.status(200).json({
       status: "success",

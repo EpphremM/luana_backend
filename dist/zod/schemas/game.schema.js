@@ -3,9 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createGameSchema = exports.updateGameSchema = exports.gameSchema = void 0;
 const zod_1 = require("zod");
 const game_enum_1 = require("../../database/enum/game.enum");
-// Schema for the winner_cards array
 const winnerCardsSchema = zod_1.z.array(zod_1.z.number().int().positive());
-// Main game schema
 exports.gameSchema = zod_1.z.object({
     name: zod_1.z.string().min(1, "Name is required"),
     player_bet: zod_1.z.number().positive("Player bet must be positive"),
@@ -23,7 +21,6 @@ exports.updateGameSchema = exports.gameSchema.partial().refine(data => {
     message: "At least one field must be provided for update",
     path: ["update"]
 });
-// Schema for creating a new game (without optional fields)
 exports.createGameSchema = exports.gameSchema.omit({
     created_at: true,
     is_aggregated: true

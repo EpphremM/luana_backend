@@ -8,7 +8,6 @@ const superAgentDetailsSchema = zod_1.z.object({
     status: zod_1.z.nativeEnum(permission_enum_1.PermissionStatus).default(permission_enum_1.PermissionStatus.Pemitted),
     package: zod_1.z.number().positive(),
 });
-// Create schema for SuperAgent signup
 exports.superAgentSchema = zod_1.z.object({
     super_agent: superAgentDetailsSchema,
     first_name: zod_1.z.string().min(1, "First name is required"),
@@ -41,6 +40,7 @@ exports.updateSuperAgentSchema = zod_1.z.object({
     }, {
         message: "Invalid phone number format"
     }).optional(),
+    fee_percentage: zod_1.z.number().positive().optional(),
     password: zod_1.z.string().min(8).optional(),
     confirm_password: zod_1.z.string().optional(),
 }).refine((data) => !data.password || data.password === data.confirm_password, {

@@ -21,7 +21,7 @@ class UserRepository {
         return await this.userRepository.find({ relations: ["admin"] });
     }
     async findById(id) {
-        return await this.userRepository.find({ where: { id }, relations: ["company", "casher", "admin"] });
+        return await this.userRepository.find({ where: { id }, relations: ["super_admin", "casher", "admin", "super_agent"] });
     }
     async findByUsername(username) {
         return await this.userRepository.findOne({ where: { username } });

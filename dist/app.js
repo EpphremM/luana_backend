@@ -17,6 +17,7 @@ const global_erro_handler_1 = require("./global/global.erro.handler");
 const cartela_routes_1 = require("./routes/cartela.routes");
 const card_routes_1 = require("./routes/card.routes");
 const super_agent_routes_1 = require("./routes/super.agent.routes");
+const transaction_routes_1 = require("./routes/transaction.routes");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -28,15 +29,17 @@ class App {
         // Enhanced CORS configuration
         this.app.use((0, cors_1.default)({
             origin: [
-                "https://abyssinia-bingo-hrse.onrender.com",
-                "https://abyssinia-bingo-hrse.onrender.com/",
+                // "https://abyssinia-bingo-hrse.onrender.com",
+                // "https://abyssinia-bingo-hrse.onrender.com",
+                // "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
                 // "https://abyssinia-bingo.onrender.com",
-                "https://tamagnbingo.com",
-                "https://abyssiniagames.com",
+                // "https://tamagnbingo.com",
+                // "https://abyssiniagames.com",
+                "https://xbingoet.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
@@ -59,6 +62,7 @@ class App {
         const cardRoutes = new card_routes_1.CardRoutes();
         const cartelaRoutes = new cartela_routes_1.CartelaRoutes();
         const superAgentRoutes = new super_agent_routes_1.SuperAgentRoutes();
+        const transactionRoutes = new transaction_routes_1.TransactionRoutes();
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
         this.app.use("/bingo/v1/company", companyRoutes.router);
@@ -68,6 +72,7 @@ class App {
         this.app.use("/bingo/v1", authRoutes.router);
         this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
         this.app.use("/bingo/v1/super-agent", superAgentRoutes.router);
+        this.app.use("/bingo/v1/transaction", transactionRoutes.router);
         this.app.use(global_erro_handler_1.globalErrorHandler);
     }
 }

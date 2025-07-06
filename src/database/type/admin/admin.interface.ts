@@ -2,6 +2,7 @@ import { Cartela } from "../../entities/cartela.entity";
 import { Casher } from "../../entities/casher.entity";
 import { Game } from "../../entities/game.entity";
 import { User } from "../../entities/user.entity";
+import { SuperAgentInterface } from "../super_agent/super.agent.interface";
 import { UserInterface } from "../user/user.interface";
 
 export interface AdminInterface {
@@ -14,4 +15,6 @@ export interface AdminInterface {
     user?:User;
     cashers?:Casher[];
     cartela_id:string;
+    super_agent_id:string;
+    super_agent:SuperAgentInterface;
 }

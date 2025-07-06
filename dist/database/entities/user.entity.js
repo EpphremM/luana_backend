@@ -17,6 +17,7 @@ const admin_entity_1 = require("./admin.entity");
 const company_entity_1 = require("./company.entity");
 const refresh_entity_1 = require("./refresh.entity");
 const agent_entity_1 = require("./agent.entity");
+const transaction_entity_1 = require("./transaction.entity");
 let User = class User {
 };
 exports.User = User;
@@ -68,6 +69,14 @@ __decorate([
     (0, typeorm_1.OneToOne)(() => company_entity_1.SuperAdmin, superr => superr.user, { onDelete: "CASCADE", onUpdate: "CASCADE" }),
     __metadata("design:type", company_entity_1.SuperAdmin)
 ], User.prototype, "super_admin", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => transaction_entity_1.Transaction, (transaction) => transaction.sender),
+    __metadata("design:type", Array)
+], User.prototype, "sentTransactions", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => transaction_entity_1.Transaction, (transaction) => transaction.reciever),
+    __metadata("design:type", Array)
+], User.prototype, "receivedTransactions", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

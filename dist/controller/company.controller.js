@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanies = exports.signup = void 0;
+exports.topUpForAdmins = exports.topUpForSuperAgents = exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanies = exports.signup = void 0;
 const company_schema_1 = require("../zod/schemas/company.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const company_repository_1 = require("../database/repositories/company.repository");
@@ -9,6 +9,9 @@ const hashing_service_1 = require("../services/hashing.service");
 const user_repository_1 = require("../database/repositories/user.repository");
 const role_enum_1 = require("../database/enum/role.enum");
 const response_body_1 = require("../express/types/response.body");
+const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
+const transaction_controller_1 = require("./transaction.controller");
+const admin_repository_1 = require("../database/repositories/admin.repository");
 const signup = async (req, res, next) => {
     try {
         const validationStatus = await (0, zod_validation_1.validateInput)(company_schema_1.companySchema, req.body);
@@ -215,3 +218,81 @@ const companyEarnings = async (req, res, next) => {
     }
 };
 exports.companyEarnings = companyEarnings;
+const topUpForSuperAgents = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { agent_id, birrAmount } = req.body;
+        const superAgent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(agent_id);
+        const company = await company_repository_1.CompanyRepository.getRepo().findById(id);
+        if (!birrAmount) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Package can not be empty!", []));
+        }
+        if (!company) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Company not found", []));
+        }
+        if (!superAgent) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Admin not found", []));
+        }
+        const parsedNewPackage = Number(birrAmount);
+        if (isNaN(parsedNewPackage)) {
+            return res.status(400).json((0, response_body_1.createResponse)("fail", "Invalid package value", []));
+        }
+        const packageAmount = Math.round((100 / Number(superAgent.fee_percentage) * birrAmount));
+        const body = {
+            type: "send_package",
+            amount_in_birr: birrAmount,
+            amount_in_package: Number(packageAmount),
+            status: "completed",
+            sender_id: `${company.user.id}`,
+            reciever_id: `${superAgent.user.id}`
+        };
+        const updated_superAgent_package = Number(superAgent.package) + packageAmount;
+        super_agent_repository_1.SuperAgentRepository.getRepo().update(superAgent, { package: updated_superAgent_package });
+        const createdTransaction = await (0, transaction_controller_1.crteateTransaction)(body);
+        console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+        res.status(200).json((0, response_body_1.createResponse)("success", "Super agent information updated successfully", superAgent));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error updating admin package", 500, "Operational", error));
+    }
+};
+exports.topUpForSuperAgents = topUpForSuperAgents;
+const topUpForAdmins = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { admin_id, birrAmount } = req.body;
+        const admin = await admin_repository_1.AdminRepository.getRepo().findById(admin_id);
+        const company = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(id);
+        if (!birrAmount) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Package can not be empty!", []));
+        }
+        if (!company) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Company not found", []));
+        }
+        if (!admin) {
+            return res.status(404).json((0, response_body_1.createResponse)("fail", "Admin not found", []));
+        }
+        const parsedNewPackage = Number(birrAmount);
+        if (isNaN(parsedNewPackage)) {
+            return res.status(400).json((0, response_body_1.createResponse)("fail", "Invalid package value", []));
+        }
+        const packageAmount = Math.floor((100 / Number(admin.fee_percentage) * birrAmount));
+        const body = {
+            type: "send_package",
+            amount_in_birr: birrAmount,
+            amount_in_package: Number(packageAmount),
+            status: "completed",
+            sender_id: `${company.user.id}`,
+            reciever_id: `${admin.user.id}`
+        };
+        const updated_admin_package = Number(admin.package) + packageAmount;
+        admin_repository_1.AdminRepository.getRepo().update(admin, { package: updated_admin_package });
+        const createdTransaction = await (0, transaction_controller_1.crteateTransaction)(body);
+        console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+        res.status(200).json((0, response_body_1.createResponse)("success", "Admin information updated successfully", admin));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error updating admin package", 500, "Operational", error));
+    }
+};
+exports.topUpForAdmins = topUpForAdmins;

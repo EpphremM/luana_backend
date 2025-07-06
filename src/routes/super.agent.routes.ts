@@ -6,6 +6,8 @@ import {
   updateSuperAgent,
   deleteSuperAgent,
   topUpForAdmins,
+  superAgentEarningsSummary,
+  getAdminActivityStatus,
 } from "../controller/super.agent.controller";
 import { requireRole } from "../utils/role.middleware";
 import { UserRole } from "../database/enum/role.enum";
@@ -25,6 +27,9 @@ export class SuperAgentRoutes {
       .get(getSuperAgentById)
       .patch(updateSuperAgent)
       .delete(requireRole(UserRole.Company), deleteSuperAgent);
+    
+       this.router.route("/earnings/:id").get(superAgentEarningsSummary);
+       this.router.route("/admin-status/:id").get(getAdminActivityStatus);
        this.router.route("/topup/:id").post(topUpForAdmins);
   }
 }

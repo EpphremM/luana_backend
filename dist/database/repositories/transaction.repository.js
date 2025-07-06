@@ -1,0 +1,91 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TransactionRepository = void 0;
+const data_source_1 = require("../data.source");
+const transaction_entity_1 = require("../entities/transaction.entity");
+class TransactionRepository {
+    constructor() {
+        this.transactionRepository = data_source_1.AppDataSource.getRepository(transaction_entity_1.Transaction);
+    }
+    async register(transaction) {
+        return await this.transactionRepository.save(transaction);
+    }
+    async registerForTopUp(transaction) {
+        return await this.transactionRepository.save(transaction);
+    }
+    async find(pagination) {
+        const { page = 1, limit = 10 } = pagination;
+        const parsedPage = Math.max(1, Number(page));
+        const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
+        const skip = (parsedPage - 1) * parsedLimit;
+        const query = this.transactionRepository.createQueryBuilder("transaction")
+            .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.reciever", "reciverUser");
+        const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
+        const totalPages = Math.ceil(total / parsedLimit);
+        return {
+            data: transactions,
+            pagination: {
+                totalItems: total,
+                itemCount: transactions.length,
+                itemsPerPage: parsedLimit,
+                totalPages,
+                currentPage: parsedPage,
+                hasNextPage: parsedPage < totalPages,
+                hasPreviousPage: parsedPage > 1,
+            }
+        };
+    }
+    async findByUserId(user_id, pagination) {
+        console.log("User id os", user_id);
+        const { page = 1, limit = 10 } = pagination;
+        const parsedPage = Math.max(1, Number(page));
+        const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
+        const skip = (parsedPage - 1) * parsedLimit;
+        const query = this.transactionRepository.createQueryBuilder("transaction")
+            .leftJoinAndSelect("transaction.sender", "senderUser")
+            .leftJoinAndSelect("transaction.reciever", "recieverUser")
+            .where("transaction.sender_id = :userId", { userId: user_id })
+            .orWhere("transaction.reciever_id = :userId", { userId: user_id });
+        const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
+        const totalPages = Math.ceil(total / parsedLimit);
+        return {
+            data: transactions,
+            pagination: {
+                totalItems: total,
+                itemCount: transactions.length,
+                itemsPerPage: parsedLimit,
+                totalPages,
+                currentPage: parsedPage,
+                hasNextPage: parsedPage < totalPages,
+                hasPreviousPage: parsedPage > 1,
+            }
+        };
+    }
+    async findById(id) {
+        return await this.transactionRepository.findOne({
+            where: { id },
+            relations: ["user"]
+        });
+    }
+    async delete(id) {
+        return await this.transactionRepository.delete(id);
+    }
+    async update(transaction, updateData) {
+        try {
+            Object.assign(transaction, updateData);
+            return await this.transactionRepository.save(transaction);
+        }
+        catch (error) {
+            console.error("Update error:", error);
+            throw new Error("Failed to persist transaction updates");
+        }
+    }
+    static getRepo() {
+        if (!TransactionRepository.transactionRepo) {
+            TransactionRepository.transactionRepo = new TransactionRepository();
+        }
+        return TransactionRepository.transactionRepo;
+    }
+}
+exports.TransactionRepository = TransactionRepository;
+TransactionRepository.transactionRepo = null;

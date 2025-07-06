@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.admin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAdmin = exports.signup = void 0;
+exports.oneAdmin15DayReport = exports.admin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAdmin = exports.signup = void 0;
 const admin_schema_1 = require("../zod/schemas/admin.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const admin_repository_1 = require("../database/repositories/admin.repository");
@@ -17,18 +17,14 @@ const signup = async (req, res, next) => {
             return next(new app_error_1.AppError("Invalid Request", 400, "Operational"));
         }
         const { admin, password, confirm_password, username, first_name, last_name, phone } = req.body;
-        // Check if the passwords match
         if (password !== confirm_password) {
             return next(new app_error_1.AppError("Passwords must match", 400, "Operational"));
         }
-        // Check if the username already exists
         const existingUser = await user_repository_1.UserRepository.getRepo().findByUsername(username);
         if (existingUser) {
             return next(new app_error_1.AppError("User already registered", 400, "OperationalError"));
         }
-        // Hash the password before saving
         const hashedPassword = await (0, hashing_service_1.hashPassword)(password);
-        // 1️⃣ Create and save the User first
         const user = await user_repository_1.UserRepository.getRepo().register({
             first_name,
             last_name,
@@ -37,12 +33,10 @@ const signup = async (req, res, next) => {
             phone,
             role: role_enum_1.UserRole.Admin,
         });
-        // 2️⃣ Create the associated Admin
         const newAdmin = await admin_repository_1.AdminRepository.getRepo().register({
             ...admin,
             user,
         });
-        // Respond with a success message
         res.status(201).json((0, response_body_1.createResponse)("success", "Admin signup completed successfully", newAdmin));
     }
     catch (error) {
@@ -226,15 +220,11 @@ const AdminEarnings = async (req, res, next) => {
 exports.AdminEarnings = AdminEarnings;
 const admin15DayReport = async (req, res, next) => {
     try {
-        // Last 15 days calculation
         const fifteenDaysAgo = new Date();
-        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
-        // Get all admins with their cashiers and games
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
         const admins = await admin_repository_1.AdminRepository.getRepo().findll();
         console.log(admins);
-        // Process each admin
         const report = admins.map(admin => {
-            // Initialize 15-day structure
             const dailyBreakdown = [];
             for (let i = 0; i < 15; i++) {
                 const date = new Date(fifteenDaysAgo);
@@ -247,7 +237,6 @@ const admin15DayReport = async (req, res, next) => {
             }
             let totalEarnings = 0;
             let totalAdminShare = 0;
-            // Process each cashier's games
             admin.cashers?.forEach(cashier => {
                 cashier.game?.forEach(game => {
                     const gameDate = new Date(game.created_at);
@@ -287,3 +276,61 @@ const admin15DayReport = async (req, res, next) => {
     }
 };
 exports.admin15DayReport = admin15DayReport;
+const oneAdmin15DayReport = async (req, res, next) => {
+    try {
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
+        const admins = await admin_repository_1.AdminRepository.getRepo().findll();
+        console.log(admins);
+        const report = admins.map(admin => {
+            const dailyBreakdown = [];
+            for (let i = 0; i < 15; i++) {
+                const date = new Date(fifteenDaysAgo);
+                date.setDate(date.getDate() + i);
+                dailyBreakdown.push({
+                    date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+                    amount: 0
+                });
+            }
+            let totalEarnings = 0;
+            let totalAdminShare = 0;
+            admin.cashers?.forEach(cashier => {
+                cashier.game?.forEach(game => {
+                    const gameDate = new Date(game.created_at);
+                    const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
+                    if (dayEntry) {
+                        const adminPrice = typeof game.admin_price === 'string'
+                            ? parseFloat(game.admin_price)
+                            : Number(game.admin_price) || 0;
+                        dayEntry.amount += adminPrice;
+                        totalAdminShare += adminPrice;
+                        totalEarnings += (game.player_bet * game.total_player);
+                    }
+                });
+            });
+            return {
+                id: admin.id,
+                first_name: admin.user?.first_name,
+                last_name: admin.user?.last_name,
+                total_cashiers: admin.cashers?.length || 0,
+                total_earnings: totalEarnings,
+                admin_share: totalAdminShare,
+                daily_breakdown: dailyBreakdown.map(day => ({
+                    ...day,
+                    amount: Number(day.amount.toFixed(2))
+                }))
+            };
+        });
+        res.status(200).json({
+            status: 'success',
+            data: report
+        });
+    }
+    catch (error) {
+        console.error("Error", error);
+        next(new app_error_1.AppError("Internal server error", 500, "Operational"));
+    }
+};
+exports.oneAdmin15DayReport = oneAdmin15DayReport;

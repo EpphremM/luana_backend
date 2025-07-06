@@ -246,7 +246,7 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
     const calculateEarnings = (games: any[]) =>
       games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
 
-    // Prepare metrics
+
 
 
     const earnings = {
@@ -369,5 +369,82 @@ export const topUpForAdmins = async (req: Request, res: Response, next: NextFunc
     res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
   } catch (error) {
     next(new AppError("Error updating admin package", 500, "Operational", error));
+  }
+};
+export const getAllAdminActivityStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const admins = await AdminRepository.getRepo().findll();
+
+    const now = new Date();
+
+    const activityStatus = admins.map((admin) => {
+      const allGames = admin.cashers.flatMap(casher => casher.game || []);
+      const completedGames = allGames.filter(game => game.status === "completed");
+
+      const lastGame = completedGames.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+
+      let status: 'no_games' | 'active' | 'dormant' | 'inactive';
+      let status_message: string;
+
+      if (!lastGame) {
+        status = "no_games";
+        status_message = "No games created yet";
+      } else {
+        const lastGameDate = new Date(lastGame.created_at);
+        const diffMs = now.getTime() - lastGameDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 1) {
+          status = "active";
+          status_message = "Active within the last 24 hours";
+        } else if (diffDays < 7) {
+          status = "dormant";
+          status_message = `Dormant for ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+        } else {
+          status = "inactive";
+          status_message = "Inactive for a long time";
+        }
+      }
+
+      return {
+        admin_id: admin.id,
+        first_name: admin.user?.first_name || "",
+        last_name: admin.user?.last_name || "",
+        username: admin.user?.username || "",
+        totalGames: completedGames.length,
+        lastGameAt: lastGame?.created_at || null,
+        status,
+        status_message,
+      };
+    });
+    const statusPriority = {
+      active: 1,
+      dormant: 2,
+      inactive: 3,
+      no_games: 4,
+    };
+
+    const sortedStatus = activityStatus.sort((a, b) => {
+      const aPriority = statusPriority[a.status];
+      const bPriority = statusPriority[b.status];
+
+      if (aPriority !== bPriority) return aPriority - bPriority;
+
+      // If same status, sort by latest game date (nulls last)
+      const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
+      const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    res.status(200).json(createResponse(
+      "success",
+      "All admin activity statuses retrieved successfully",
+      sortedStatus
+    ));
+  } catch (error) {
+    console.error("Error retrieving all admin activity:", error);
+    next(new AppError("Failed to retrieve admin activity", 500, "Operational", error));
   }
 };

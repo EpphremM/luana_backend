@@ -10,6 +10,7 @@ const role_enum_1 = require("../database/enum/role.enum");
 const response_body_1 = require("../express/types/response.body");
 const super_agent_schema_1 = require("../zod/schemas/super.agent.schema");
 const admin_repository_1 = require("../database/repositories/admin.repository");
+const transaction_controller_1 = require("./transaction.controller");
 const signupSuperAgent = async (req, res, next) => {
     try {
         const validationStatus = await (0, zod_validation_1.validateInput)(super_agent_schema_1.superAgentSchema, req.body);
@@ -133,10 +134,10 @@ exports.deleteSuperAgent = deleteSuperAgent;
 const topUpForAdmins = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { admin_id, new_package } = req.body;
+        const { admin_id, birrAmount } = req.body;
         const admin = await admin_repository_1.AdminRepository.getRepo().findById(admin_id);
         const superAgent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(id);
-        if (!new_package) {
+        if (!birrAmount) {
             return res.status(404).json((0, response_body_1.createResponse)("fail", "Package can not be empty!", []));
         }
         if (!superAgent) {
@@ -145,17 +146,28 @@ const topUpForAdmins = async (req, res, next) => {
         if (!admin) {
             return res.status(404).json((0, response_body_1.createResponse)("fail", "Admin not found", []));
         }
-        const parsedNewPackage = Number(new_package);
+        const parsedNewPackage = Number(birrAmount);
         if (isNaN(parsedNewPackage)) {
             return res.status(400).json((0, response_body_1.createResponse)("fail", "Invalid package value", []));
         }
-        const updated_admin_package = Number(admin.package) + parsedNewPackage;
-        const updated_super_agent_package = Number(superAgent.package) - parsedNewPackage;
+        const packageAmount = (100 / Number(admin.fee_percentage) * birrAmount);
+        const body = {
+            type: "send_package",
+            amount_in_birr: birrAmount,
+            amount_in_package: Number(packageAmount),
+            status: "completed",
+            sender_id: `${superAgent.user.id}`,
+            reciever_id: `${admin.user.id}`
+        };
+        const updated_admin_package = Number(admin.package) + packageAmount;
+        const updated_super_agent_package = Number(superAgent.package) - packageAmount;
         if (updated_super_agent_package < 0) {
             return res.status(400).json((0, response_body_1.createResponse)("fail", "Insufficient balance please recharge your account", []));
         }
         admin_repository_1.AdminRepository.getRepo().update(admin, { package: updated_admin_package });
         super_agent_repository_1.SuperAgentRepository.getRepo().update(superAgent, { package: updated_super_agent_package });
+        const createdTransaction = await (0, transaction_controller_1.crteateTransaction)(body);
+        console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
         res.status(200).json((0, response_body_1.createResponse)("success", "Admin information updated successfully", admin));
     }
     catch (error) {
