@@ -4,6 +4,7 @@ import { SuperAgentInterface } from "../type/super_agent/super.agent.interface";
 import { PaginationDto } from "../../DTO/pagination.dto";
 import { SuperAgent } from "../entities/agent.entity";
 import { AppError } from "../../express/error/app.error";
+import { AdminRepository } from "./admin.repository";
 
 
 export class SuperAgentRepository {
@@ -45,7 +46,7 @@ export class SuperAgentRepository {
 
   const superAgent = await SuperAgentRepository.getRepo().findById(super_agent_id);
   if (!superAgent) throw new AppError("Super Agent not found", 404);
-
+const NormalAdmin=await AdminRepository.getRepo().findll();
   const adminAggregates = superAgent.admins.map((admin) => {
     let totalSales = 0;
     let totalAdminEarnings = 0;

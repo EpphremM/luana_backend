@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateGameStatus = exports.updateWinGame = exports.deleteGame = exports.updateGame = exports.getGamesByCasherId = exports.getOneGame = exports.getAllGames = exports.createGame = void 0;
+exports.updateGameStatus = exports.updateWinGame = exports.deleteGame = exports.updateGame = exports.getGamesByCasherId = exports.getOneGame = exports.getSuperAgentSalesReport = exports.getFilteredAdminSales = exports.getAllGames = exports.createGame = void 0;
 const game_schema_1 = require("../zod/schemas/game.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const game_repository_1 = require("../database/repositories/game.repository");
@@ -9,6 +9,7 @@ const response_body_1 = require("../express/types/response.body");
 const admin_repository_1 = require("../database/repositories/admin.repository");
 const company_repository_1 = require("../database/repositories/company.repository");
 const casher_repository_1 = require("../database/repositories/casher.repository");
+const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
 const createGame = async (req, res, next) => {
     try {
         const validationStatus = await (0, zod_validation_1.validateInput)(game_schema_1.createGameSchema, req.body);
@@ -35,6 +36,50 @@ const getAllGames = async (req, res, next) => {
     }
 };
 exports.getAllGames = getAllGames;
+const getFilteredAdminSales = async (req, res, next) => {
+    try {
+        const paginationDto = {
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+        };
+        const filters = {
+            admin_id: req.query.admin_id,
+            casher_id: req.query.casher_id ? Number(req.query.casher_id) : undefined,
+            start_date: req.query.start_date,
+            end_date: req.query.end_date,
+        };
+        // const admin=await AdminRepository.getRepo().findById(admin_)
+        const data = await game_repository_1.GameRepository.getRepo().findAdminSales(paginationDto, filters);
+        res.status(200).json({
+            status: "success",
+            message: "Filtered sales data fetched successfully",
+            data,
+        });
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error fetching filtered sales data", 500, "Operational", error));
+    }
+};
+exports.getFilteredAdminSales = getFilteredAdminSales;
+const getSuperAgentSalesReport = async (req, res, next) => {
+    try {
+        const pagination = {
+            page: req.query.page ? parseInt(req.query.page, 10) : 1,
+            limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
+        };
+        const filters = {
+            super_agent_id: req.query.super_agent_id,
+            start_date: req.query.start_date,
+            end_date: req.query.end_date,
+        };
+        const report = await super_agent_repository_1.SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
+        return res.status(200).json((0, response_body_1.createResponse)("success", "Super agent data fetched successfully", { report }));
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getSuperAgentSalesReport = getSuperAgentSalesReport;
 const getOneGame = async (req, res, next) => {
     try {
         const { id } = req.params;

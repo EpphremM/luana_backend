@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentById = exports.getSuperAgents = exports.signupSuperAgent = void 0;
+exports.getAdminActivityStatus = exports.superAgentEarningsSummary = exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentById = exports.getSuperAgents = exports.signupSuperAgent = void 0;
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
 const app_error_1 = require("../express/error/app.error");
@@ -69,6 +69,7 @@ const getSuperAgentById = async (req, res, next) => {
         res.status(200).json((0, response_body_1.createResponse)("success", "Super Agent fetched successfully", agent));
     }
     catch (error) {
+        console.log("Fetching errror is", error);
         next(new app_error_1.AppError("Error fetching super agent", 500, "Operational"));
     }
 };
@@ -84,6 +85,7 @@ const updateSuperAgent = async (req, res, next) => {
         const agentUpdates = {
             status: agentData.super_agent?.status ?? existing.status,
             package: agentData.super_agent?.package ?? Number(existing.package),
+            fee_percentage: agentData.super_agent?.fee_percentage ?? Number(existing.fee_percentage)
         };
         const validation = await (0, zod_validation_1.validateInput)(super_agent_schema_1.updateSuperAgentSchema, { super_agent: agentUpdates });
         if (validation.status !== "success") {
@@ -95,6 +97,7 @@ const updateSuperAgent = async (req, res, next) => {
         }
         existing.status = agentUpdates.status;
         existing.package = agentUpdates.package;
+        existing.fee_percentage = agentUpdates.fee_percentage;
         if (existing.user) {
             if (first_name)
                 existing.user.first_name = first_name;
@@ -175,3 +178,108 @@ const topUpForAdmins = async (req, res, next) => {
     }
 };
 exports.topUpForAdmins = topUpForAdmins;
+const superAgentEarningsSummary = async (req, res, next) => {
+    try {
+        const { id: superAgentId } = req.params;
+        const superAgent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(superAgentId);
+        if (!superAgent)
+            return next(new app_error_1.AppError("Super Agent not found", 404, "Operational"));
+        const allCompletedGames = superAgent.admins.flatMap(admin => admin.cashers.flatMap(casher => casher.game.filter(game => game.status === "completed")));
+        const now = new Date();
+        const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const weekStart = new Date(todayStart);
+        weekStart.setUTCDate(todayStart.getUTCDate() - (todayStart.getUTCDay() || 7) + 1);
+        const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
+        const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
+        const filterByDate = (games, startDate) => games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
+        const calculateEarnings = (games) => games.reduce((total, game) => total + parseFloat(game.admin_price || 0), 0);
+        const earnings = {
+            createdAt: superAgent.user.created_at,
+            totalAdmins: superAgent.admins.length,
+            totalCashers: superAgent.admins.reduce((sum, admin) => sum + admin.cashers.length, 0),
+            totalGames: allCompletedGames.length,
+            first_name: superAgent.user.first_name,
+            last_name: superAgent.user.last_name,
+            username: superAgent.user.username,
+            today: calculateEarnings(filterByDate(allCompletedGames, todayStart)),
+            thisWeek: calculateEarnings(filterByDate(allCompletedGames, weekStart)),
+            thisMonth: calculateEarnings(filterByDate(allCompletedGames, monthStart)),
+            thisYear: calculateEarnings(filterByDate(allCompletedGames, yearStart)),
+            allTime: calculateEarnings(allCompletedGames),
+        };
+        res.status(200).json((0, response_body_1.createResponse)("success", "Super agent earnings summary retrieved", earnings));
+    }
+    catch (err) {
+        console.error("Earnings summary error:", err);
+        next(new app_error_1.AppError("Failed to calculate super agent earnings", 500, "Operational", err));
+    }
+};
+exports.superAgentEarningsSummary = superAgentEarningsSummary;
+const getAdminActivityStatus = async (req, res, next) => {
+    try {
+        const { id: superAgentId } = req.params;
+        const superAgent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(superAgentId);
+        if (!superAgent)
+            return next(new app_error_1.AppError("Super Agent not found", 404, "Operational"));
+        const now = new Date();
+        const activityStatus = superAgent.admins.map((admin) => {
+            const allGames = admin.cashers.flatMap(casher => casher.game || []);
+            const completedGames = allGames.filter(game => game.status === "completed");
+            const lastGame = completedGames.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+            let status;
+            let status_message;
+            if (!lastGame) {
+                status = "no_games";
+                status_message = "No games created yet";
+            }
+            else {
+                const lastGameDate = new Date(lastGame.created_at);
+                const diffMs = now.getTime() - lastGameDate.getTime();
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays < 1) {
+                    status = "active";
+                    status_message = "Active within the last 24 hours";
+                }
+                else if (diffDays < 7) {
+                    status = "dormant";
+                    status_message = `Dormant for ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+                }
+                else {
+                    status = "inactive";
+                    status_message = "Inactive for a long time";
+                }
+            }
+            return {
+                admin_id: admin.id,
+                first_name: admin.user?.first_name || "",
+                last_name: admin.user?.last_name || "",
+                username: admin.user?.username || "",
+                totalGames: completedGames.length,
+                lastGameAt: lastGame?.created_at || null,
+                status,
+                status_message,
+            };
+        });
+        const statusPriority = {
+            active: 1,
+            dormant: 2,
+            inactive: 3,
+            no_games: 4,
+        };
+        const sortedActivity = activityStatus.sort((a, b) => {
+            const aPriority = statusPriority[a.status];
+            const bPriority = statusPriority[b.status];
+            if (aPriority !== bPriority)
+                return aPriority - bPriority;
+            const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
+            const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
+            return bTime - aTime;
+        });
+        res.status(200).json((0, response_body_1.createResponse)("success", "Admin activity status retrieved successfully", sortedActivity));
+    }
+    catch (error) {
+        console.error("Error getting admin activity:", error);
+        next(new app_error_1.AppError("Failed to get admin activity", 500, "Operational", error));
+    }
+};
+exports.getAdminActivityStatus = getAdminActivityStatus;

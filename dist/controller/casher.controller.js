@@ -167,18 +167,15 @@ const cashierEarnings = async (req, res, next) => {
         weekStart.setUTCDate(todayStart.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
         const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
         const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
+        const twoDaysAgo = new Date(todayStart);
+        twoDaysAgo.setUTCDate(todayStart.getUTCDate() - 2);
         const filterByDate = (games, startDate) => games.filter(game => new Date(game.created_at) >= startDate);
-        // Or more precise UTC comparison:
-        const filterByDateUTC = (games, startDate) => games.filter(game => {
-            const gameDate = new Date(game.created_at);
-            return gameDate >= startDate;
-        });
         const calculateEarnings = (games) => games.reduce((total, game) => total + (game.total_player * game.player_bet) - parseFloat(game.derash), 0);
         const earnings = {
             first_name: cashier.user.first_name,
             last_name: cashier.user.last_name,
             status: cashier.status,
-            games: cashier?.game,
+            games: filterByDate(completedGames, twoDaysAgo).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
             package: cashier?.admin?.package,
             today: calculateEarnings(filterByDate(completedGames, todayStart)),
             thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),

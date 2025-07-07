@@ -12,6 +12,7 @@ class CompanyRoutes {
     }
     setRoutes() {
         this.router.route("/").post(company_controller_1.signup).get(company_controller_1.getCompanies);
+        this.router.route("/admin-status").get(company_controller_1.getAllAdminActivityStatus);
         this.router.route("/earnings/:id").get(company_controller_1.companyEarnings);
         this.router.route("/:id").get(company_controller_1.getOneCompany).patch(company_controller_1.updateCompany).delete((0, role_middleware_1.requireRole)(role_enum_1.UserRole.Company), company_controller_1.deleteCompany);
         this.router.route("/super-agent/topup/:id").post(company_controller_1.topUpForSuperAgents);

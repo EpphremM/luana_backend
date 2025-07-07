@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.topUpForAdmins = exports.topUpForSuperAgents = exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanies = exports.signup = void 0;
+exports.getAllAdminActivityStatus = exports.topUpForAdmins = exports.topUpForSuperAgents = exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanies = exports.signup = void 0;
 const company_schema_1 = require("../zod/schemas/company.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const company_repository_1 = require("../database/repositories/company.repository");
@@ -193,7 +193,6 @@ const companyEarnings = async (req, res, next) => {
         const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
         const filterByDate = (games, startDate) => games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
         const calculateEarnings = (games) => games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
-        // Prepare metrics
         const earnings = {
             createdAt: company.user.created_at,
             feePercentage: company.fee_percentage,
@@ -296,3 +295,69 @@ const topUpForAdmins = async (req, res, next) => {
     }
 };
 exports.topUpForAdmins = topUpForAdmins;
+const getAllAdminActivityStatus = async (req, res, next) => {
+    try {
+        const admins = await admin_repository_1.AdminRepository.getRepo().findll();
+        const now = new Date();
+        const activityStatus = admins.map((admin) => {
+            const allGames = admin.cashers.flatMap(casher => casher.game || []);
+            const completedGames = allGames.filter(game => game.status === "completed");
+            const lastGame = completedGames.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+            let status;
+            let status_message;
+            if (!lastGame) {
+                status = "no_games";
+                status_message = "No games created yet";
+            }
+            else {
+                const lastGameDate = new Date(lastGame.created_at);
+                const diffMs = now.getTime() - lastGameDate.getTime();
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays < 1) {
+                    status = "active";
+                    status_message = "Active within the last 24 hours";
+                }
+                else if (diffDays < 7) {
+                    status = "dormant";
+                    status_message = `Dormant for ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+                }
+                else {
+                    status = "inactive";
+                    status_message = "Inactive for a long time";
+                }
+            }
+            return {
+                admin_id: admin.id,
+                first_name: admin.user?.first_name || "",
+                last_name: admin.user?.last_name || "",
+                username: admin.user?.username || "",
+                totalGames: completedGames.length,
+                lastGameAt: lastGame?.created_at || null,
+                status,
+                status_message,
+            };
+        });
+        const statusPriority = {
+            active: 1,
+            dormant: 2,
+            inactive: 3,
+            no_games: 4,
+        };
+        const sortedStatus = activityStatus.sort((a, b) => {
+            const aPriority = statusPriority[a.status];
+            const bPriority = statusPriority[b.status];
+            if (aPriority !== bPriority)
+                return aPriority - bPriority;
+            // If same status, sort by latest game date (nulls last)
+            const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
+            const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
+            return bTime - aTime;
+        });
+        res.status(200).json((0, response_body_1.createResponse)("success", "All admin activity statuses retrieved successfully", sortedStatus));
+    }
+    catch (error) {
+        console.error("Error retrieving all admin activity:", error);
+        next(new app_error_1.AppError("Failed to retrieve admin activity", 500, "Operational", error));
+    }
+};
+exports.getAllAdminActivityStatus = getAllAdminActivityStatus;

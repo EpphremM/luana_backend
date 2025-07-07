@@ -19,7 +19,9 @@ class TransactionRepository {
         const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
         const skip = (parsedPage - 1) * parsedLimit;
         const query = this.transactionRepository.createQueryBuilder("transaction")
-            .leftJoinAndSelect("transaction.sender", "senderUser").leftJoinAndSelect("transaction.reciever", "reciverUser");
+            .leftJoinAndSelect("transaction.sender", "senderUser")
+            .leftJoinAndSelect("transaction.reciever", "reciverUser")
+            .orderBy("transaction.created_at", "DESC");
         const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
         const totalPages = Math.ceil(total / parsedLimit);
         return {
@@ -36,7 +38,6 @@ class TransactionRepository {
         };
     }
     async findByUserId(user_id, pagination) {
-        console.log("User id os", user_id);
         const { page = 1, limit = 10 } = pagination;
         const parsedPage = Math.max(1, Number(page));
         const parsedLimit = Math.min(100, Math.max(1, Number(limit)));
@@ -45,7 +46,8 @@ class TransactionRepository {
             .leftJoinAndSelect("transaction.sender", "senderUser")
             .leftJoinAndSelect("transaction.reciever", "recieverUser")
             .where("transaction.sender_id = :userId", { userId: user_id })
-            .orWhere("transaction.reciever_id = :userId", { userId: user_id });
+            .orWhere("transaction.reciever_id = :userId", { userId: user_id })
+            .orderBy("transaction.created_at", "DESC");
         const [transactions, total] = await query.take(parsedLimit).skip(skip).getManyAndCount();
         const totalPages = Math.ceil(total / parsedLimit);
         return {

@@ -82,12 +82,109 @@ export const getSuperAgentSalesReport = async (
       end_date: req.query.end_date as string | undefined,
     };
 
-    const report = await SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
-    return res.status(200).json(createResponse("success","Super agent data fetched successfully",{report}));
+    const parsedLimit = Math.min(100, Math.max(1, pagination.limit));
+    const parsedPage = Math.max(1, pagination.page);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // ✅ Define today start in UTC
+    const now = new Date();
+    const todayUTCStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    // ✅ Get all admins with their cashers and games
+    const allAdmins = await AdminRepository.getRepo().findll();
+
+    // ✅ Process today's games (UTC)
+    const todayAdminAggregates = allAdmins.map((admin) => {
+      let totalSales = 0;
+      let totalAdminEarnings = 0;
+      let totalCompanyEarnings = 0;
+      let totalGames = 0;
+      let totalPlayerBets = 0;
+
+      const games = admin.cashers.flatMap((casher) =>
+        (casher.game || []).filter((game) => {
+          const createdAt = new Date(game.created_at);
+          return game.status === "completed" && createdAt.getTime() >= todayUTCStart.getTime();
+        })
+      );
+
+      games.forEach((game) => {
+        const derash = Number(game.derash ?? 0);
+        const playerBet = Number(game.player_bet ?? 0);
+        const totalPlayers = Number(game.total_player ?? 0);
+        const playerTotalBet = playerBet * totalPlayers;
+
+        totalSales += derash;
+        totalAdminEarnings += Number(game.admin_price ?? 0);
+        totalCompanyEarnings += Number(game.company_comission ?? 0);
+        totalPlayerBets += playerTotalBet;
+        totalGames++;
+      });
+
+      return {
+        admin_id: admin.id,
+        firstName: admin.user?.first_name ?? "",
+        lastName: admin.user?.last_name ?? "",
+        fee_percentage: admin.fee_percentage,
+        totalSales,
+        totalPlayerBets,
+        totalCut: totalPlayerBets - totalSales,
+        totalAdminEarnings,
+        totalCompanyEarnings,
+        totalGames,
+      };
+    }).filter((entry) => entry.totalGames > 0);
+
+    // ✅ Sort & Paginate today's data
+    const sortedToday = todayAdminAggregates.sort((a, b) => b.totalSales - a.totalSales);
+    const paginatedToday = sortedToday.slice(skip, skip + parsedLimit);
+
+    const todaySummary = sortedToday.reduce((acc, cur) => {
+      acc.totalSales += cur.totalSales;
+      acc.totalPlayerBets += cur.totalPlayerBets;
+      acc.totalCut += cur.totalCut;
+      acc.totalAdminEarnings += cur.totalAdminEarnings;
+      acc.totalCompanyEarnings += cur.totalCompanyEarnings;
+      acc.totalGames += cur.totalGames;
+      return acc;
+    }, {
+      totalSales: 0,
+      totalPlayerBets: 0,
+      totalCut: 0,
+      totalAdminEarnings: 0,
+      totalCompanyEarnings: 0,
+      totalGames: 0,
+    });
+
+    const todayPages = Math.ceil(sortedToday.length / parsedLimit);
+
+    // ✅ Optionally Fetch Filtered Report
+    let filteredReport = null;
+    if (filters.super_agent_id) {
+      filteredReport = await SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
+    }
+
+    return res.status(200).json(createResponse("success", "Report retrieved", {
+      payload: {
+        per_admin: paginatedToday,
+        overall_summary: todaySummary,
+        pagination: {
+          totalItems: sortedToday.length,
+          itemCount: paginatedToday.length,
+          itemsPerPage: parsedLimit,
+          totalPages: todayPages,
+          currentPage: parsedPage,
+          hasNextPage: parsedPage < todayPages,
+          hasPreviousPage: parsedPage > 1,
+        },
+        filtered: filteredReport?.data?.payload ?? null,
+      }
+    }));
   } catch (error) {
     next(error);
   }
 };
+
 export const getOneGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;

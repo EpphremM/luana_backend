@@ -16,6 +16,7 @@ const company_entity_1 = require("./company.entity");
 const permission_enum_1 = require("../enum/permission.enum");
 const user_entity_1 = require("./user.entity");
 const cartela_entity_1 = require("./cartela.entity");
+const agent_entity_1 = require("./agent.entity");
 let Admin = class Admin {
 };
 exports.Admin = Admin;
@@ -64,6 +65,11 @@ __decorate([
     __metadata("design:type", cartela_entity_1.Cartela)
 ], Admin.prototype, "cartela", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => Admin, admin => admin.super_agent),
+    (0, typeorm_1.JoinColumn)({ name: "super_agent_id" }),
+    __metadata("design:type", agent_entity_1.SuperAgent)
+], Admin.prototype, "super_agent", void 0);
+__decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Admin.prototype, "cartela_id", void 0);
@@ -71,6 +77,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Admin.prototype, "super_id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Admin.prototype, "super_agent_id", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

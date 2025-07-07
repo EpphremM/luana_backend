@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.oneAdmin15DayReport = exports.admin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAdmin = exports.signup = void 0;
+exports.getAdminsBySuperAgent = exports.oneAdmin15DayReport = exports.refundGame = exports.admin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAdmin = exports.signup = void 0;
 const admin_schema_1 = require("../zod/schemas/admin.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const admin_repository_1 = require("../database/repositories/admin.repository");
@@ -9,6 +9,7 @@ const hashing_service_1 = require("../services/hashing.service");
 const user_repository_1 = require("../database/repositories/user.repository");
 const role_enum_1 = require("../database/enum/role.enum");
 const response_body_1 = require("../express/types/response.body");
+const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
 const signup = async (req, res, next) => {
     try {
         const validationStatus = await (0, zod_validation_1.validateInput)(admin_schema_1.adminSchema, req.body);
@@ -65,11 +66,9 @@ const getOne = async (req, res, next) => {
         if (!admin) {
             return next(new app_error_1.AppError("User not found", 400, "Operational"));
         }
-        // console.log(admin); 
         res.status(200).json((0, response_body_1.createResponse)("success", "Admin fetched successfully", admin));
     }
     catch (error) {
-        // console.log(error);
         return next(new app_error_1.AppError("Error occured. please try again", 400, "Operationsl"));
     }
 };
@@ -77,15 +76,12 @@ exports.getOne = getOne;
 const update = async (req, res, next) => {
     try {
         const { id } = req.params;
-        // Make sure to load the user relation
         const existingAdmin = await admin_repository_1.AdminRepository.getRepo().findById(id);
         if (!existingAdmin) {
             res.status(404).json((0, response_body_1.createResponse)("error", "Admin not found", []));
             return;
         }
-        // Separate the update data
         const { password, confirm_password, first_name, last_name, phone, username, ...adminData } = req.body;
-        // Prepare user updates
         const userUpdates = {
             first_name,
             last_name,
@@ -93,17 +89,23 @@ const update = async (req, res, next) => {
             phone,
             password
         };
-        console.log("Existing admin", existingAdmin);
-        // Prepare admin updates - ensure we're using the nested admin data if provided
+        let superAgent;
+        if (adminData.admin.super_agent_id) {
+            superAgent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(adminData.admin.super_agent_id);
+            existingAdmin.super_agent = superAgent;
+        }
+        if (adminData.admin.super_agent_id == null) {
+            existingAdmin.super_agent = null;
+        }
         const adminUpdates = {
             status: adminData.admin?.status ?? existingAdmin.status,
             total_earning: adminData.admin?.total_earning ?? Number(existingAdmin.total_earning),
             net_earning: adminData.admin?.net_earning ?? Number(existingAdmin.net_earning),
             package: adminData.admin?.package ?? Number(existingAdmin.package),
             fee_percentage: adminData.admin?.fee_percentage ?? Number(existingAdmin.fee_percentage),
+            super_agent_id: adminData.admin?.super_agent_id ?? existingAdmin.super_agent_id,
             cartela_id: adminData.admin?.cartela_id ?? existingAdmin.cartela_id
         };
-        // Validate admin updates
         const adminValidation = await (0, zod_validation_1.validateInput)(admin_schema_1.updateAdminSchema, { admin: adminUpdates });
         if (adminValidation.status !== "success") {
             res.status(400).json({
@@ -113,14 +115,13 @@ const update = async (req, res, next) => {
             });
             return;
         }
-        // Apply updates - do this carefully field by field
         existingAdmin.status = adminUpdates.status;
         existingAdmin.total_earning = adminUpdates.total_earning;
         existingAdmin.net_earning = adminUpdates.net_earning;
         existingAdmin.package = adminUpdates.package;
         existingAdmin.fee_percentage = adminUpdates.fee_percentage;
         existingAdmin.cartela_id = adminUpdates.cartela_id;
-        // Update user fields
+        existingAdmin.super_agent_id = adminUpdates.super_agent_id;
         if (existingAdmin.user) {
             if (userUpdates.first_name)
                 existingAdmin.user.first_name = userUpdates.first_name;
@@ -134,10 +135,10 @@ const update = async (req, res, next) => {
                 existingAdmin.user.password = await (0, hashing_service_1.hashPassword)(userUpdates.password);
         }
         // Save the changes - make sure your repository's saveWithUser method is working
+        console.log("Existing admin data is", existingAdmin);
         const updatedAdmin = await admin_repository_1.AdminRepository.getRepo().saveWithUser(existingAdmin);
-        // Verify the update
+        console.log("Updated admin data is", updatedAdmin);
         const persistedAdmin = await admin_repository_1.AdminRepository.getRepo().findById(id);
-        // Return clean response
         res.status(200).json({
             status: "success",
             message: "Admin updated successfully",
@@ -154,6 +155,7 @@ const update = async (req, res, next) => {
                     username: persistedAdmin.user?.username,
                     phone: persistedAdmin.user?.phone,
                     cartela_id: persistedAdmin.cartela_id,
+                    super_agent_id: persistedAdmin.super_agent_id,
                     updated_at: new Date()
                 }
             }
@@ -276,6 +278,9 @@ const admin15DayReport = async (req, res, next) => {
     }
 };
 exports.admin15DayReport = admin15DayReport;
+const refundGame = async (req, res, next) => {
+};
+exports.refundGame = refundGame;
 const oneAdmin15DayReport = async (req, res, next) => {
     try {
         const fifteenDaysAgo = new Date();
@@ -334,3 +339,16 @@ const oneAdmin15DayReport = async (req, res, next) => {
     }
 };
 exports.oneAdmin15DayReport = oneAdmin15DayReport;
+const getAdminsBySuperAgent = async (req, res, next) => {
+    try {
+        const { superAgentId } = req.params;
+        const pagination = req.query;
+        const result = await admin_repository_1.AdminRepository.getRepo().findBySuperAgent(superAgentId, pagination);
+        res.status(200).json((0, response_body_1.createResponse)("success", "Admins under super agent fetched successfully", result));
+    }
+    catch (error) {
+        console.error("Error fetching admins by super agent:", error);
+        next(new app_error_1.AppError("Failed to fetch admins", 500, "Operational"));
+    }
+};
+exports.getAdminsBySuperAgent = getAdminsBySuperAgent;

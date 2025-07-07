@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const company_entity_1 = require("./company.entity");
 const permission_enum_1 = require("../enum/permission.enum");
 const user_entity_1 = require("./user.entity");
+const admin_entity_1 = require("./admin.entity");
 let SuperAgent = class SuperAgent {
 };
 exports.SuperAgent = SuperAgent;
@@ -39,6 +40,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: "super_id" }),
     __metadata("design:type", company_entity_1.SuperAdmin)
 ], SuperAgent.prototype, "company", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => admin_entity_1.Admin, admin => admin.super_agent),
+    __metadata("design:type", Array)
+], SuperAgent.prototype, "admins", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: 3 }),
     __metadata("design:type", Number)
