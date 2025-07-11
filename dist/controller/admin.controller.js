@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminsBySuperAgent = exports.oneAdmin15DayReport = exports.refundGame = exports.admin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAdmin = exports.signup = void 0;
+exports.getAdminsBySuperAgent = exports.oneAdmin15DayReport = exports.refundGame = exports.superAdminAdmin15DayReport = exports.companyAdmin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAllAdmins = exports.getAdmin = exports.signup = void 0;
 const admin_schema_1 = require("../zod/schemas/admin.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const admin_repository_1 = require("../database/repositories/admin.repository");
@@ -58,6 +58,16 @@ const getAdmin = async (req, res, next) => {
     }
 };
 exports.getAdmin = getAdmin;
+const getAllAdmins = async (req, res, next) => {
+    try {
+        const admins = await admin_repository_1.AdminRepository.getRepo().findll();
+        res.status(200).json((0, response_body_1.createResponse)("success", "Admin fetched successfully", { data: admins }));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Failed to fetch admins", 500, "Operational"));
+    }
+};
+exports.getAllAdmins = getAllAdmins;
 const getOne = async (req, res, next) => {
     const adminRepo = admin_repository_1.AdminRepository.getRepo();
     try {
@@ -220,7 +230,7 @@ const AdminEarnings = async (req, res, next) => {
     }
 };
 exports.AdminEarnings = AdminEarnings;
-const admin15DayReport = async (req, res, next) => {
+const companyAdmin15DayReport = async (req, res, next) => {
     try {
         const fifteenDaysAgo = new Date();
         fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
@@ -277,7 +287,69 @@ const admin15DayReport = async (req, res, next) => {
         next(new app_error_1.AppError("Internal server error", 500, "Operational"));
     }
 };
-exports.admin15DayReport = admin15DayReport;
+exports.companyAdmin15DayReport = companyAdmin15DayReport;
+const superAdminAdmin15DayReport = async (req, res, next) => {
+    try {
+        const { super_id } = req.params;
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
+        const super_agent = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(super_id);
+        const admins = super_agent.admins;
+        console.log("super agent is ", super_agent);
+        console.log("admins  are ", admins);
+        console.log(admins);
+        const report = admins.map(admin => {
+            const dailyBreakdown = [];
+            for (let i = 0; i < 15; i++) {
+                const date = new Date(fifteenDaysAgo);
+                date.setDate(date.getDate() + i);
+                dailyBreakdown.push({
+                    date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+                    amount: 0
+                });
+            }
+            let totalEarnings = 0;
+            let totalAdminShare = 0;
+            admin.cashers?.forEach(cashier => {
+                cashier.game?.forEach(game => {
+                    const gameDate = new Date(game.created_at);
+                    const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
+                    if (dayEntry) {
+                        const adminPrice = typeof game.admin_price === 'string'
+                            ? parseFloat(game.admin_price)
+                            : Number(game.admin_price) || 0;
+                        dayEntry.amount += adminPrice;
+                        totalAdminShare += adminPrice;
+                        totalEarnings += (game.player_bet * game.total_player);
+                    }
+                });
+            });
+            return {
+                id: admin.id,
+                first_name: admin.user?.first_name,
+                last_name: admin.user?.last_name,
+                total_cashiers: admin.cashers?.length || 0,
+                total_earnings: totalEarnings,
+                admin_share: totalAdminShare,
+                daily_breakdown: dailyBreakdown.map(day => ({
+                    ...day,
+                    amount: Number(day.amount.toFixed(2))
+                }))
+            };
+        });
+        res.status(200).json({
+            status: 'success',
+            data: report
+        });
+    }
+    catch (error) {
+        console.error("Error", error);
+        next(new app_error_1.AppError("Internal server error", 500, "Operational"));
+    }
+};
+exports.superAdminAdmin15DayReport = superAdminAdmin15DayReport;
 const refundGame = async (req, res, next) => {
 };
 exports.refundGame = refundGame;

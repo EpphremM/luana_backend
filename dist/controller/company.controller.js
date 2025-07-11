@@ -192,7 +192,7 @@ const companyEarnings = async (req, res, next) => {
         const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
         const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
         const filterByDate = (games, startDate) => games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
-        const calculateEarnings = (games) => games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
+        const calculateEarnings = (games) => games.reduce((total, game) => total + ((game.total_player * game.player_bet) - game.derash), 0);
         const earnings = {
             createdAt: company.user.created_at,
             feePercentage: company.fee_percentage,
@@ -261,7 +261,7 @@ const topUpForAdmins = async (req, res, next) => {
         const { id } = req.params;
         const { admin_id, birrAmount } = req.body;
         const admin = await admin_repository_1.AdminRepository.getRepo().findById(admin_id);
-        const company = await super_agent_repository_1.SuperAgentRepository.getRepo().findById(id);
+        const company = await company_repository_1.CompanyRepository.getRepo().findById(id);
         if (!birrAmount) {
             return res.status(404).json((0, response_body_1.createResponse)("fail", "Package can not be empty!", []));
         }
@@ -348,7 +348,6 @@ const getAllAdminActivityStatus = async (req, res, next) => {
             const bPriority = statusPriority[b.status];
             if (aPriority !== bPriority)
                 return aPriority - bPriority;
-            // If same status, sort by latest game date (nulls last)
             const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
             const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
             return bTime - aTime;

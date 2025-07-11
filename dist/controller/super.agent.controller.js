@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminActivityStatus = exports.superAgentEarningsSummary = exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentById = exports.getSuperAgents = exports.signupSuperAgent = void 0;
+exports.getAdminActivityStatus = exports.superAgentEarningsSummary = exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentById = exports.getAllSuperAgents = exports.getSuperAgents = exports.signupSuperAgent = void 0;
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
 const app_error_1 = require("../express/error/app.error");
@@ -59,6 +59,16 @@ const getSuperAgents = async (req, res, next) => {
     }
 };
 exports.getSuperAgents = getSuperAgents;
+const getAllSuperAgents = async (req, res, next) => {
+    try {
+        const superAgents = await super_agent_repository_1.SuperAgentRepository.getRepo().findAll();
+        res.status(200).json((0, response_body_1.createResponse)("success", "Super Agent fetched successfully!", { data: superAgents }));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Failed to fetch super agents", 500, "Operational"));
+    }
+};
+exports.getAllSuperAgents = getAllSuperAgents;
 const getSuperAgentById = async (req, res, next) => {
     try {
         const { id } = req.params;

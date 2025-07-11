@@ -59,7 +59,14 @@ export const getAdmin = async (req: Request, res: Response, next: NextFunction) 
     next(new AppError("Failed to fetch admins", 500, "Operational"));
   }
 };
-
+export const getAllAdmins=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+const admins=await AdminRepository.getRepo().findll();
+res.status(200).json(createResponse("success","Admin fetched successfully",{data:admins}))
+  }catch(error){
+     next(new AppError("Failed to fetch admins", 500, "Operational"));
+  }
+}
 export const getOne = async (req: Request, res: Response, next: NextFunction) => {
   const adminRepo = AdminRepository.getRepo();
   try {
@@ -248,11 +255,79 @@ export const AdminEarnings = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const admin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
+export const companyAdmin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
     const admins = await AdminRepository.getRepo().findll()
+    console.log(admins);
+    const report = admins.map(admin => {
+      const dailyBreakdown = [];
+      for (let i = 0; i < 15; i++) {
+        const date = new Date(fifteenDaysAgo);
+        date.setDate(date.getDate() + i);
+
+        dailyBreakdown.push({
+          date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+          amount: 0
+        });
+      }
+
+      let totalEarnings = 0;
+      let totalAdminShare = 0;
+      admin.cashers?.forEach(cashier => {
+        cashier.game?.forEach(game => {
+          const gameDate = new Date(game.created_at);
+          const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+          const dayEntry = dailyBreakdown.find(entry => entry.date === dateStr);
+          if (dayEntry) {
+            const adminPrice = typeof game.admin_price === 'string'
+              ? parseFloat(game.admin_price)
+              : Number(game.admin_price) || 0;
+
+            dayEntry.amount += adminPrice;
+            totalAdminShare += adminPrice;
+            totalEarnings += (game.player_bet * game.total_player);
+          }
+        });
+      });
+
+      return {
+        id: admin.id,
+        first_name: admin.user?.first_name,
+        last_name: admin.user?.last_name,
+        total_cashiers: admin.cashers?.length || 0,
+        total_earnings: totalEarnings,
+        admin_share: totalAdminShare,
+        daily_breakdown: dailyBreakdown.map(day => ({
+          ...day,
+          amount: Number(day.amount.toFixed(2))
+        }))
+      };
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: report
+    });
+
+  } catch (error) {
+    console.error("Error", error);
+    next(new AppError("Internal server error", 500, "Operational"));
+  }
+};
+export const superAdminAdmin15DayReport = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {super_id}=req.params;
+
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14);
+    const super_agent = await SuperAgentRepository.getRepo().findById(super_id);
+    const admins=super_agent.admins;
+    console.log("super agent is ",super_agent);
+    console.log("admins  are ",admins);
     console.log(admins);
     const report = admins.map(admin => {
       const dailyBreakdown = [];

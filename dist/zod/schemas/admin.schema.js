@@ -14,8 +14,8 @@ exports.adminSchema = zod_1.z.object({
     first_name: zod_1.z.string().min(1, "First name is required"),
     last_name: zod_1.z.string().min(1, "Last name is required"),
     username: zod_1.z.string().min(4, "Username must be at least 4 characters"),
-    password: zod_1.z.string().min(8, "Password must be at least 8 characters"),
-    confirm_password: zod_1.z.string().min(8, "Confirm password must be at least 8 characters"),
+    password: zod_1.z.string().min(4, "Password must be at least 4 characters"),
+    confirm_password: zod_1.z.string().min(4, "Confirm password must be at least 8 characters"),
 }).refine((data) => data.password === data.confirm_password, {
     message: "Passwords don't match",
     path: ["confirm_password"],

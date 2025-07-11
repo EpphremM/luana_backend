@@ -244,7 +244,9 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
     const filterByDate = (games: any[], startDate: Date) =>
       games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
     const calculateEarnings = (games: any[]) =>
-      games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
+games.reduce((total, game) => 
+  total + ((game.total_player * game.player_bet) - game.derash), 0);
+
 
 
 
@@ -333,7 +335,7 @@ export const topUpForAdmins = async (req: Request, res: Response, next: NextFunc
 
 
     const admin = await AdminRepository.getRepo().findById(admin_id);
-    const company = await SuperAgentRepository.getRepo().findById(id);
+    const company = await CompanyRepository.getRepo().findById(id);
 
     if (!birrAmount) {
       return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
@@ -432,7 +434,6 @@ export const getAllAdminActivityStatus = async (req: Request, res: Response, nex
 
       if (aPriority !== bPriority) return aPriority - bPriority;
 
-      // If same status, sort by latest game date (nulls last)
       const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
       const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
       return bTime - aTime;

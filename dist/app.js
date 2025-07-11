@@ -21,8 +21,8 @@ const transaction_routes_1 = require("./routes/transaction.routes");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
-        this.initializeMiddleware(); // Initialize middleware FIRST
-        this.initializeRoutes(); // Then routes
+        this.initializeMiddleware();
+        this.initializeRoutes();
     }
     initializeMiddleware() {
         this.app.use((0, cookie_parser_1.default)());
@@ -31,7 +31,7 @@ class App {
             origin: [
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 // "https://abyssinia-bingo-hrse.onrender.com",
-                // "http://localhost:3001",
+                "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 

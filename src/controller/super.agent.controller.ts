@@ -66,6 +66,15 @@ export const getSuperAgents = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const getAllSuperAgents=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+const superAgents=await SuperAgentRepository.getRepo().findAll();
+res.status(200).json(createResponse("success","Super Agent fetched successfully!",{data:superAgents}))
+  }catch(error){
+     next(new AppError("Failed to fetch super agents", 500, "Operational"));
+  }
+}
+
 export const getSuperAgentById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -216,7 +225,8 @@ export const superAgentEarningsSummary = async (req: Request, res: Response, nex
       games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
 
     const calculateEarnings = (games: any[]) =>
-      games.reduce((total, game) => total + parseFloat(game.admin_price || 0), 0);
+      games.reduce((total, game) => 
+  total + ((game.total_player * game.player_bet) - game.derash), 0);
 
     const earnings = {
       createdAt: superAgent.user.created_at,

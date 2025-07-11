@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-
 import { createGameSchema, updateGameSchema } from "../zod/schemas/game.schema";
 import { validateInput } from "../zod/middleware/zod.validation";
 import { GameRepository } from "../database/repositories/game.repository";
@@ -7,12 +6,9 @@ import { AppError } from "../express/error/app.error";
 import { createResponse } from "../express/types/response.body";
 import { GameInterface } from "../database/type/game/game.interface";
 import { PaginationDto } from "../DTO/pagination.dto";
-import { error } from "console";
 import { AdminRepository } from "../database/repositories/admin.repository";
 import { CompanyRepository } from "../database/repositories/company.repository";
 import { CasherRepository } from "../database/repositories/casher.repository";
-import { promises } from "dns";
-import { number } from "zod";
 import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
 
 export const createGame = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,123 +62,118 @@ export const getFilteredAdminSales = async (req: Request, res: Response, next: N
     }
 };
 export const getSuperAgentSalesReport = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+    req: Request,
+    res: Response,
+    next: NextFunction
 ) => {
-  try {
-    const pagination: PaginationDto = {
-      page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
-      limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
-    };
+    try {
+        const pagination: PaginationDto = {
+            page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
+            limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
+        };
 
-    const filters = {
-      super_agent_id: req.query.super_agent_id as string,
-      start_date: req.query.start_date as string | undefined,
-      end_date: req.query.end_date as string | undefined,
-    };
+        const filters = {
+            super_agent_id: req.query.super_agent_id as string,
+            start_date: req.query.start_date as string | undefined,
+            end_date: req.query.end_date as string | undefined,
+        };
 
-    const parsedLimit = Math.min(100, Math.max(1, pagination.limit));
-    const parsedPage = Math.max(1, pagination.page);
-    const skip = (parsedPage - 1) * parsedLimit;
+        const parsedLimit = Math.min(100, Math.max(1, pagination.limit));
+        const parsedPage = Math.max(1, pagination.page);
+        const skip = (parsedPage - 1) * parsedLimit;
 
-    // ✅ Define today start in UTC
-    const now = new Date();
-    const todayUTCStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const now = new Date();
+        const todayUTCStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-    // ✅ Get all admins with their cashers and games
-    const allAdmins = await AdminRepository.getRepo().findll();
+        const allAdmins = await AdminRepository.getRepo().findll();
 
-    // ✅ Process today's games (UTC)
-    const todayAdminAggregates = allAdmins.map((admin) => {
-      let totalSales = 0;
-      let totalAdminEarnings = 0;
-      let totalCompanyEarnings = 0;
-      let totalGames = 0;
-      let totalPlayerBets = 0;
+        const todayAdminAggregates = allAdmins.map((admin) => {
+            let totalSales = 0;
+            let totalAdminEarnings = 0;
+            let totalCompanyEarnings = 0;
+            let totalGames = 0;
+            let totalPlayerBets = 0;
 
-      const games = admin.cashers.flatMap((casher) =>
-        (casher.game || []).filter((game) => {
-          const createdAt = new Date(game.created_at);
-          return game.status === "completed" && createdAt.getTime() >= todayUTCStart.getTime();
-        })
-      );
+            const games = admin.cashers.flatMap((casher) =>
+                (casher.game || []).filter((game) => {
+                    const createdAt = new Date(game.created_at);
+                    return game.status === "completed" && createdAt.getTime() >= todayUTCStart.getTime();
+                })
+            );
 
-      games.forEach((game) => {
-        const derash = Number(game.derash ?? 0);
-        const playerBet = Number(game.player_bet ?? 0);
-        const totalPlayers = Number(game.total_player ?? 0);
-        const playerTotalBet = playerBet * totalPlayers;
+            games.forEach((game) => {
+                const derash = Number(game.derash ?? 0);
+                const playerBet = Number(game.player_bet ?? 0);
+                const totalPlayers = Number(game.total_player ?? 0);
+                const playerTotalBet = playerBet * totalPlayers;
 
-        totalSales += derash;
-        totalAdminEarnings += Number(game.admin_price ?? 0);
-        totalCompanyEarnings += Number(game.company_comission ?? 0);
-        totalPlayerBets += playerTotalBet;
-        totalGames++;
-      });
+                totalSales += derash;
+                totalAdminEarnings += Number(game.admin_price ?? 0);
+                totalCompanyEarnings += Number(game.company_comission ?? 0);
+                totalPlayerBets += playerTotalBet;
+                totalGames++;
+            });
 
-      return {
-        admin_id: admin.id,
-        firstName: admin.user?.first_name ?? "",
-        lastName: admin.user?.last_name ?? "",
-        fee_percentage: admin.fee_percentage,
-        totalSales,
-        totalPlayerBets,
-        totalCut: totalPlayerBets - totalSales,
-        totalAdminEarnings,
-        totalCompanyEarnings,
-        totalGames,
-      };
-    }).filter((entry) => entry.totalGames > 0);
+            return {
+                admin_id: admin.id,
+                firstName: admin.user?.first_name ?? "",
+                lastName: admin.user?.last_name ?? "",
+                fee_percentage: admin.fee_percentage,
+                totalSales,
+                totalPlayerBets,
+                totalCut: totalPlayerBets - totalSales,
+                totalAdminEarnings,
+                totalCompanyEarnings,
+                totalGames,
+            };
+        }).filter((entry) => entry.totalGames > 0);
 
-    // ✅ Sort & Paginate today's data
-    const sortedToday = todayAdminAggregates.sort((a, b) => b.totalSales - a.totalSales);
-    const paginatedToday = sortedToday.slice(skip, skip + parsedLimit);
+        const sortedToday = todayAdminAggregates.sort((a, b) => b.totalSales - a.totalSales);
+        const paginatedToday = sortedToday.slice(skip, skip + parsedLimit);
 
-    const todaySummary = sortedToday.reduce((acc, cur) => {
-      acc.totalSales += cur.totalSales;
-      acc.totalPlayerBets += cur.totalPlayerBets;
-      acc.totalCut += cur.totalCut;
-      acc.totalAdminEarnings += cur.totalAdminEarnings;
-      acc.totalCompanyEarnings += cur.totalCompanyEarnings;
-      acc.totalGames += cur.totalGames;
-      return acc;
-    }, {
-      totalSales: 0,
-      totalPlayerBets: 0,
-      totalCut: 0,
-      totalAdminEarnings: 0,
-      totalCompanyEarnings: 0,
-      totalGames: 0,
-    });
+        const todaySummary = sortedToday.reduce((acc, cur) => {
+            acc.totalSales += cur.totalSales;
+            acc.totalPlayerBets += cur.totalPlayerBets;
+            acc.totalCut += cur.totalCut;
+            acc.totalAdminEarnings += cur.totalAdminEarnings;
+            acc.totalCompanyEarnings += cur.totalCompanyEarnings;
+            acc.totalGames += cur.totalGames;
+            return acc;
+        }, {
+            totalSales: 0,
+            totalPlayerBets: 0,
+            totalCut: 0,
+            totalAdminEarnings: 0,
+            totalCompanyEarnings: 0,
+            totalGames: 0,
+        });
 
-    const todayPages = Math.ceil(sortedToday.length / parsedLimit);
+        const todayPages = Math.ceil(sortedToday.length / parsedLimit);
 
-    // ✅ Optionally Fetch Filtered Report
-    let filteredReport = null;
-    if (filters.super_agent_id) {
-      filteredReport = await SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
+        let filteredReport = null;
+        if (filters.super_agent_id) {
+            filteredReport = await SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
+        }
+
+        return res.status(200).json(createResponse("success", "Report retrieved", {
+            payload: {
+                per_admin: paginatedToday,
+                overall_summary: todaySummary,
+                pagination: {
+                    totalItems: sortedToday.length,
+                    itemCount: paginatedToday.length,
+                    itemsPerPage: parsedLimit,
+                    totalPages: todayPages,
+                    currentPage: parsedPage,
+                    hasNextPage: parsedPage < todayPages,
+                    hasPreviousPage: parsedPage > 1,
+                },
+                filtered: filteredReport?.data?.payload ?? null,
+            }
+        }));
+    } catch (error) {
+        next(error);
     }
-
-    return res.status(200).json(createResponse("success", "Report retrieved", {
-      payload: {
-        per_admin: paginatedToday,
-        overall_summary: todaySummary,
-        pagination: {
-          totalItems: sortedToday.length,
-          itemCount: paginatedToday.length,
-          itemsPerPage: parsedLimit,
-          totalPages: todayPages,
-          currentPage: parsedPage,
-          hasNextPage: parsedPage < todayPages,
-          hasPreviousPage: parsedPage > 1,
-        },
-        filtered: filteredReport?.data?.payload ?? null,
-      }
-    }));
-  } catch (error) {
-    next(error);
-  }
 };
 
 export const getOneGame = async (req: Request, res: Response, next: NextFunction) => {
@@ -276,8 +267,6 @@ const getExistingAdminIncomes = async (admin_id: string, gameProfit: number) => 
     try {
         const admin = await AdminRepository.getRepo().findById(admin_id);
         if (!admin) return null;
-
-        // Convert all to numbers once at the start
         const total_earning = parseFloat(admin.total_earning.toString());
         const net_earning = parseFloat(admin.net_earning.toString());
         const packagge = parseFloat(admin.package.toString());
@@ -307,7 +296,7 @@ const updateAdminIncomes = async (admin_id: string, gameProfit: number) => {
 
         const updatedAdmin = await AdminRepository.getRepo().update(existingAdminData.admin, {
             total_earning: existingAdminData.updated_total_earning,
-            net_earning: existingAdminData.updated_net_earning,
+            // net_earning: existingAdminData.updated_net_earning,
             package: existingAdminData.updated_package,
         });
         console.log("UPdated admin is", updatedAdmin);

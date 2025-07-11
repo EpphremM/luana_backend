@@ -20,8 +20,8 @@ class App {
     constructor() {
   
         this.app = express();
-        this.initializeMiddleware(); // Initialize middleware FIRST
-        this.initializeRoutes();     // Then routes
+        this.initializeMiddleware(); 
+        this.initializeRoutes();    
     }
 
     private initializeMiddleware() {
@@ -32,7 +32,7 @@ class App {
             origin: [
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 // "https://abyssinia-bingo-hrse.onrender.com",
-                // "http://localhost:3001",
+                "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 

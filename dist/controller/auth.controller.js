@@ -14,17 +14,15 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax",
-        // domain: 'https://luana-bingo.vercel.app/',
         path: "/",
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: 60 * 60 * 1000,
     });
     res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax",
         path: "/",
-        // domain: 'https://luana-bingo.vercel.app/', 
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 };
 const login = async (req, res) => {

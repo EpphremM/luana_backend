@@ -13,6 +13,7 @@ class SuperAgentRoutes {
     setRoutes() {
         this.router.route("/").post(super_agent_controller_1.signupSuperAgent);
         this.router.route("/").get(super_agent_controller_1.getSuperAgents);
+        this.router.route("/all-super-agents").get(super_agent_controller_1.getAllSuperAgents);
         this.router.route("/:id")
             .get(super_agent_controller_1.getSuperAgentById)
             .patch(super_agent_controller_1.updateSuperAgent)

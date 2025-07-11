@@ -5,6 +5,7 @@ const data_source_1 = require("../data.source");
 const user_entity_1 = require("../entities/user.entity");
 const agent_entity_1 = require("../entities/agent.entity");
 const app_error_1 = require("../../express/error/app.error");
+const admin_repository_1 = require("./admin.repository");
 class SuperAgentRepository {
     constructor() {
         this.superAgentRepository = data_source_1.AppDataSource.getRepository(agent_entity_1.SuperAgent);
@@ -32,6 +33,7 @@ class SuperAgentRepository {
         const superAgent = await SuperAgentRepository.getRepo().findById(super_agent_id);
         if (!superAgent)
             throw new app_error_1.AppError("Super Agent not found", 404);
+        const NormalAdmin = await admin_repository_1.AdminRepository.getRepo().findll();
         const adminAggregates = superAgent.admins.map((admin) => {
             let totalSales = 0;
             let totalAdminEarnings = 0;
