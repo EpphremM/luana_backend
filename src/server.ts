@@ -18,22 +18,22 @@ const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/buil
 initializeConnection();
 
 // Load self-signed certificate
-// const sslOptions = {
-//   key: fs.readFileSync("ssl/key.pem"),
-//   cert: fs.readFileSync("ssl/cert.pem"),
-// };
+const sslOptions = {
+  key: fs.readFileSync("ssl/key.pem"),
+  cert: fs.readFileSync("ssl/cert.pem"),
+};
 
-// app.use(express.static(buildPath));
+app.use(express.static(buildPath));
 
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(buildPath, 'index.html'));
-// });
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
 
 // Start HTTPS server
-// https.createServer(sslOptions, app).listen(port, () => {
-//   console.log(`✅ HTTPS server running at https://localhost:${port}`);
-// });
+https.createServer(sslOptions, app).listen(port, () => {
+  console.log(`✅ HTTPS server running at https://localhost:${port}`);
+});
 
-app.listen(3000,()=>{
-console.log("Server is running...");
-})
+// app.listen(3000,()=>{
+// console.log("Server is running...");
+// })
