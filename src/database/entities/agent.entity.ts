@@ -3,6 +3,7 @@ import { SuperAdmin } from "./company.entity";
 import { PermissionStatus } from "../enum/permission.enum";
 import { User } from "./user.entity";
 import { SuperAgentInterface } from "../type/super_agent/super.agent.interface";
+import { Admin } from "./admin.entity";
 @Entity("super-agent")
 export class SuperAgent implements SuperAgentInterface{
 @PrimaryGeneratedColumn()
@@ -17,6 +18,10 @@ user: User;
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)
 @JoinColumn({name:"super_id"})
 company:SuperAdmin;
+@OneToMany(()=>Admin,admin=>admin.super_agent)
+admins:Admin[]
+@Column({default:3})
+fee_percentage:number
 @Column({nullable:true})
 super_id:string;
 @CreateDateColumn()

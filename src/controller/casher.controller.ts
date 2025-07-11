@@ -25,11 +25,11 @@ export const signup = async (
     const validationStatus = await validateInput<CasherInterface>(casherSchema, req.body);
 
     if (validationStatus.status !== "success") {
-        console.log(validationStatus);
+      console.log(validationStatus);
       return next(new AppError(`Invalid Request ${req.body}`, 400, "Operational"));
     }
 
-    const { casher, password, confirm_password, username, first_name, last_name,phone } = req.body;
+    const { casher, password, confirm_password, username, first_name, last_name, phone } = req.body;
 
     if (password !== confirm_password) {
       return next(new AppError("Passwords must match", 400, "Operational"));
@@ -85,11 +85,11 @@ export const getOneCasher = async (
   try {
     const { id } = req.params;
     const casher = await CasherRepository.getRepo().findById(id);
-    
+
     if (!casher) {
       return next(new AppError("Casher not found", 404, "Operational"));
     }
-    
+
     res.status(200).json(createResponse("success", "Casher fetched successfully", casher));
   } catch (error) {
     next(new AppError("Error occurred. Please try again.", 400, "Operational"));
@@ -97,57 +97,57 @@ export const getOneCasher = async (
 };
 
 export const updateCasher = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    try {
-      
-      const { id } = req.params;
-      const existingCasher = await CasherRepository.getRepo().findById(id);
-  
-      if (!existingCasher) {
-        res.status(404).json(createResponse("error", "Casher not found", []));
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+
+    const { id } = req.params;
+    const existingCasher = await CasherRepository.getRepo().findById(id);
+
+    if (!existingCasher) {
+      res.status(404).json(createResponse("error", "Casher not found", []));
+      return;
+    }
+
+    // Destructure request body
+    const {
+      casher: casherData,
+      first_name,
+      last_name,
+      username,
+      phone,
+      password,
+      confirm_password
+    } = req.body;
+
+    // Validate company data if provided
+    if (casherData) {
+      const validation = await validateInput(updateCompanySchema, { company: casherData });
+      if (validation.status !== "success") {
+        res.status(400).json({
+          status: "fail",
+          message: "Validation error",
+          errors: validation.errors,
+        });
         return;
       }
-  
-      // Destructure request body
-      const { 
-        casher: casherData, 
-        first_name, 
-        last_name, 
-        username,
-        phone,
-        password,
-        confirm_password
-      } = req.body;
-  
-      // Validate company data if provided
-      if (casherData) {
-        const validation = await validateInput(updateCompanySchema, { company: casherData });
-        if (validation.status !== "success") {
-          res.status(400).json({
-            status: "fail",
-            message: "Validation error",
-            errors: validation.errors,
-          });
-          return;
-        }
-        if (casherData.status !== undefined) {
-          existingCasher.status = casherData.status;
-        }
+      if (casherData.status !== undefined) {
+        existingCasher.status = casherData.status;
+      }
       if (existingCasher.user) {
         if (first_name) existingCasher.user.first_name = first_name;
         if (last_name) existingCasher.user.last_name = last_name;
         if (username) existingCasher.user.username = username;
         if (username) existingCasher.user.phone = username;
-        if(phone) existingCasher.user.phone=phone;
-        if(password) existingCasher.user.password=await hashPassword(password);
+        if (phone) existingCasher.user.phone = phone;
+        if (password) existingCasher.user.password = await hashPassword(password);
       }
-  
+
       // Save the updated company
       const updatedCasher = await CasherRepository.getRepo().saveWithUser(existingCasher);
-  
+
       // Return response
       res.status(200).json({
         status: "success",
@@ -165,11 +165,11 @@ export const updateCasher = async (
         }
       });
     }
-    } catch (error) {
-      next(new AppError("Error updating company", 500, "Operational", error));
-    }
-  };
-  
+  } catch (error) {
+    next(new AppError("Error updating company", 500, "Operational", error));
+  }
+};
+
 export const deleteCasher = async (
   req: Request,
   res: Response,
@@ -195,45 +195,47 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
   try {
     const { id } = req.params;
     const cashier = await CasherRepository.getRepo().findById(id);
-    
+
     if (!cashier) {
       return next(new AppError("Cashier not found", 400, "Operational"));
     }
 
     const completedGames = cashier.game.filter(game => game.status === "completed");
     const now = new Date();
+
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const weekStart = new Date(todayStart);
     const dayOfWeek = todayStart.getUTCDay();
     weekStart.setUTCDate(todayStart.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
     const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
     const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
-    
+
+    const twoDaysAgo = new Date(todayStart);
+    twoDaysAgo.setUTCDate(todayStart.getUTCDate() - 2);
+
     const filterByDate = (games: any[], startDate: Date) =>
-        games.filter(game => new Date(game.created_at) >= startDate);
-    
-    // Or more precise UTC comparison:
-    const filterByDateUTC = (games: any[], startDate: Date) =>
-        games.filter(game => {
-            const gameDate = new Date(game.created_at);
-            return gameDate >= startDate;
-        });
-    const calculateEarnings = (games: any[]) => 
-      games.reduce((total, game) => 
-        total + (game.total_player * game.player_bet) - parseFloat(game.derash), 
-      0);
+      games.filter(game => new Date(game.created_at) >= startDate);
+
+    const calculateEarnings = (games: any[]) =>
+      games.reduce((total, game) =>
+        total + (game.total_player * game.player_bet) - parseFloat(game.derash),
+        0);
+
     const earnings = {
-      first_name:cashier.user.first_name,
-      last_name:cashier.user.last_name,
-      status:cashier.status,
-      games:cashier?.game,
-      package:cashier?.admin?.package,
+      first_name: cashier.user.first_name,
+      last_name: cashier.user.last_name,
+      status: cashier.status,
+      games: filterByDate(completedGames, twoDaysAgo).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ),
+      package: cashier?.admin?.package,
       today: calculateEarnings(filterByDate(completedGames, todayStart)),
       thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),
       thisMonth: calculateEarnings(filterByDate(completedGames, monthStart)),
       thisYear: calculateEarnings(filterByDate(completedGames, yearStart)),
       allTime: calculateEarnings(completedGames)
-    }; 
+    };
+
 
     res.status(200).json({
       status: "success",
@@ -254,16 +256,16 @@ export const weeklyEarnings = async (req: Request, res: Response, next: NextFunc
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - (today.getDay() || 7) + 1); 
+    weekStart.setDate(today.getDate() - (today.getDay() || 7) + 1);
     const weekEnd = new Date();
     const result = await GameRepository.getRepo().findGameByCasherId(id, paginationDto);
-    
+
     const allGames = result.data;
     const weeklyCompletedGames = allGames.filter(game => {
       const gameDate = new Date(game.created_at);
-      return game.status === "completed" && 
-             gameDate >= weekStart && 
-             gameDate <= weekEnd;
+      return game.status === "completed" &&
+        gameDate >= weekStart &&
+        gameDate <= weekEnd;
     });
     const dailyTotals: Record<string, {
       date: string;
@@ -296,7 +298,7 @@ export const weeklyEarnings = async (req: Request, res: Response, next: NextFunc
     weeklyCompletedGames.forEach(game => {
       const gameDate = new Date(game.created_at);
       const dateKey = gameDate.toISOString().split('T')[0];
-      
+
       if (dailyTotals[dateKey]) {
         dailyTotals[dateKey].totalEarnings += Number(game.admin_price);
         dailyTotals[dateKey].gamesCount += 1;
@@ -339,12 +341,12 @@ export const weeklyReport = async (req: Request, res: Response, next: NextFuncti
 
     // Initialize empty report for last 15 days
     const report: { date: string; day: string; amount: number }[] = [];
-    
-    // Pre-fill all 15 days (even if no games exist)
+
+
     for (let i = 0; i < 15; i++) {
       const date = new Date(fifteenDaysAgo);
       date.setDate(date.getDate() + i);
-      
+
       report.push({
         date: date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
         day: date.toLocaleDateString('en-US', { weekday: 'long' }),
@@ -357,18 +359,18 @@ export const weeklyReport = async (req: Request, res: Response, next: NextFuncti
       const gameDate = new Date(game.created_at);
       if (gameDate >= fifteenDaysAgo) {
         const dateStr = gameDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-        
+
         // Find the corresponding day in report
         const dayEntry = report.find(entry => entry.date === dateStr);
         if (dayEntry) {
-          dayEntry.amount += typeof game.admin_price === 'string' 
-            ? parseFloat(game.admin_price) 
+          dayEntry.amount += typeof game.admin_price === 'string'
+            ? parseFloat(game.admin_price)
             : Number(game.admin_price) || 0;
         }
       }
     }
 
-    res.status(200).json({ 
+    res.status(200).json({
       status: 'success',
       data: report.map(entry => ({
         ...entry,
@@ -383,18 +385,24 @@ export const weeklyReport = async (req: Request, res: Response, next: NextFuncti
 };
 
 
-export const findBalance=async(req:Request,res:Response,next:NextFunction)=>{
-  try{
-    const {id}=req.params;
-    const cashier=await CasherRepository.getRepo().findById(id);
-    if(!cashier){
- return next(new AppError("Cashier not found", 404, "Operational"));
+export const findBalance = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+
+  const { id } = req.params;
+    const casher = await CasherRepository.getRepo().findById(id);
+
+
+
+    if (!casher) {
+      return next(new AppError("Casher not found", 404, "Operational"));
     }
-    res.status(200).json(createResponse("success","Cashier balace fetched successfully",{package:cashier?.admin?.package}));
+
+    res.status(200).json(createResponse("success", "Cashier balance fetched successfully", { package: casher?.admin?.package }));
     return;
 
-  }catch(error){
-    return next(new AppError("Error occured during geting cashier cashier data",400,"Operational"))
+  } catch (error) {
+    console.log(error);
+    return next(new AppError("Error occured during geting cashier cashier", 400, "Operational"))
   }
 
 }
@@ -402,6 +410,7 @@ export const findBalance=async(req:Request,res:Response,next:NextFunction)=>{
 export const updateBalance = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
+    console.log("Update balance id is", id);
     const cashier = await CasherRepository.getRepo().findById(id);
 
     if (!cashier || !cashier.admin) {
@@ -409,14 +418,17 @@ export const updateBalance = async (req: Request, res: Response, next: NextFunct
     }
 
     const admin_id = cashier.admin.id;
+    console.log("Admin_id", admin_id);
     const { package: packageAmount } = req.body;
-
-    const updated_admin = await AdminRepository.getRepo().smallUpdate(admin_id, {
-      package: packageAmount,
-    });
+    console.log("Updatable package is",packageAmount)
+    console.log("An admin id is",admin_id);
+   
+    const admin = await AdminRepository.getRepo().smallUpdate(admin_id,{package:packageAmount});
+  
+  
 
     res.status(200).json(
-      createResponse("success", "Balance updated successfully", updated_admin)
+      createResponse("success", "Balance updated successfully", admin)
     );
   } catch (error) {
     return next(

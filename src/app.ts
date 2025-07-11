@@ -12,6 +12,7 @@ import { globalErrorHandler } from "./global/global.erro.handler";
 import { CartelaRoutes } from "./routes/cartela.routes";
 import { CardRoutes } from "./routes/card.routes";
 import { SuperAgentRoutes } from "./routes/super.agent.routes";
+import { TransactionRoutes } from "./routes/transaction.routes";
 
 class App {
     public app: Application;
@@ -19,8 +20,8 @@ class App {
     constructor() {
   
         this.app = express();
-        this.initializeMiddleware(); // Initialize middleware FIRST
-        this.initializeRoutes();     // Then routes
+        this.initializeMiddleware(); 
+        this.initializeRoutes();    
     }
 
     private initializeMiddleware() {
@@ -29,13 +30,17 @@ class App {
         // Enhanced CORS configuration
         this.app.use(cors({
             origin: [
+                // "https://abyssinia-bingo-hrse.onrender.com",
+                // "https://abyssinia-bingo-hrse.onrender.com",
                 "http://localhost:3001",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
                 // "https://abyssinia-bingo.onrender.com",
-                "https://abyssiniagames.com",
+                // "https://tamagnbingo.com",
+                // "https://abyssiniagames.com",
+                "https://xbingoet.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
@@ -51,9 +56,7 @@ class App {
         this.app.use(bodyParser.json());
         this.app.use(express.json());
     }
-
     private initializeRoutes() {
-        
         const userRoutes = new UserRoutes();
         const adminRoutes = new AdminRoutes();
         const companyRoutes = new CompanyRoutes();
@@ -63,6 +66,7 @@ class App {
         const cardRoutes=new CardRoutes();
         const cartelaRoutes=new CartelaRoutes();
         const superAgentRoutes=new SuperAgentRoutes();
+        const transactionRoutes=new TransactionRoutes();
         
         this.app.use("/bingo/v1/user", userRoutes.router);
         this.app.use("/bingo/v1/admin", adminRoutes.router);
@@ -73,6 +77,7 @@ class App {
         this.app.use("/bingo/v1", authRoutes.router);
         this.app.use("/bingo/v1/cartela", cartelaRoutes.router);
         this.app.use("/bingo/v1/super-agent", superAgentRoutes.router);
+        this.app.use("/bingo/v1/transaction", transactionRoutes.router);
         this.app.use(globalErrorHandler);
     }
 }

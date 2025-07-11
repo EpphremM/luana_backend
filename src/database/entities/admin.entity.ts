@@ -5,6 +5,7 @@ import { PermissionStatus } from "../enum/permission.enum";
 import { AdminInterface } from "../type/admin/admin.interface";
 import { User } from "./user.entity";
 import { Cartela } from "./cartela.entity";
+import { SuperAgent } from "./agent.entity";
 
 @Entity("admin")
 export class Admin implements AdminInterface{
@@ -32,10 +33,15 @@ company:SuperAdmin;
 @ManyToOne(()=>Cartela,cartela=>cartela.admin)
 @JoinColumn({name:"cartela_id"})
 cartela:Cartela;
+@ManyToOne(()=>Admin,admin=>admin.super_agent)
+@JoinColumn({name:"super_agent_id"})
+super_agent:SuperAgent;
 @Column({nullable:true})
 cartela_id:string;
 @Column({nullable:true})
 super_id:string;
+@Column({nullable:true})
+super_agent_id:string;
 @CreateDateColumn()
 created_at:Date;
 }

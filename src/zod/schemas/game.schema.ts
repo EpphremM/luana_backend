@@ -2,10 +2,8 @@ import { z } from "zod";
 import { GameStatus } from "../../database/enum/game.enum";
 
 
-// Schema for the winner_cards array
 const winnerCardsSchema = z.array(z.number().int().positive());
 
-// Main game schema
 export const gameSchema = z.object({
   name: z.string().min(1, "Name is required"),
   player_bet: z.number().positive("Player bet must be positive"),
@@ -25,7 +23,6 @@ export const updateGameSchema = gameSchema.partial().refine(data => {
   path: ["update"]
 });
 
-// Schema for creating a new game (without optional fields)
 export const createGameSchema = gameSchema.omit({ 
   created_at: true,
   is_aggregated: true 

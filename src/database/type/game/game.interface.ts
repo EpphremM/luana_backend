@@ -9,6 +9,8 @@ export class GameInterface{
     winner_cards:number[]
     total_player:number;
     status:string;
+    derash:number;
+    company_comission:number;
     created_at:Date;
     casher_id?:string;
     casher?:Casher;

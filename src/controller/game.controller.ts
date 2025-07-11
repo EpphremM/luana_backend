@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-
 import { createGameSchema, updateGameSchema } from "../zod/schemas/game.schema";
 import { validateInput } from "../zod/middleware/zod.validation";
 import { GameRepository } from "../database/repositories/game.repository";
@@ -7,12 +6,10 @@ import { AppError } from "../express/error/app.error";
 import { createResponse } from "../express/types/response.body";
 import { GameInterface } from "../database/type/game/game.interface";
 import { PaginationDto } from "../DTO/pagination.dto";
-import { error } from "console";
 import { AdminRepository } from "../database/repositories/admin.repository";
 import { CompanyRepository } from "../database/repositories/company.repository";
 import { CasherRepository } from "../database/repositories/casher.repository";
-import { promises } from "dns";
-import { number } from "zod";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
 
 export const createGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,6 +35,144 @@ export const getAllGames = async (req: Request, res: Response, next: NextFunctio
         res.status(200).json(createResponse("success", "Games fetched successfully", games));
     } catch (error) {
         next(new AppError("Error fetching games", 500, "Operational", error));
+    }
+};
+export const getFilteredAdminSales = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const paginationDto: PaginationDto = {
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+        };
+        const filters = {
+            admin_id: req.query.admin_id as string | undefined,
+            casher_id: req.query.casher_id ? Number(req.query.casher_id) : undefined,
+            start_date: req.query.start_date as string | undefined,
+            end_date: req.query.end_date as string | undefined,
+        };
+        // const admin=await AdminRepository.getRepo().findById(admin_)
+        const data = await GameRepository.getRepo().findAdminSales(paginationDto, filters);
+
+        res.status(200).json({
+            status: "success",
+            message: "Filtered sales data fetched successfully",
+            data,
+        });
+    } catch (error) {
+        next(new AppError("Error fetching filtered sales data", 500, "Operational", error));
+    }
+};
+export const getSuperAgentSalesReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const pagination: PaginationDto = {
+            page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
+            limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
+        };
+
+        const filters = {
+            super_agent_id: req.query.super_agent_id as string,
+            start_date: req.query.start_date as string | undefined,
+            end_date: req.query.end_date as string | undefined,
+        };
+
+        const parsedLimit = Math.min(100, Math.max(1, pagination.limit));
+        const parsedPage = Math.max(1, pagination.page);
+        const skip = (parsedPage - 1) * parsedLimit;
+
+        const now = new Date();
+        const todayUTCStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        const allAdmins = await AdminRepository.getRepo().findll();
+
+        const todayAdminAggregates = allAdmins.map((admin) => {
+            let totalSales = 0;
+            let totalAdminEarnings = 0;
+            let totalCompanyEarnings = 0;
+            let totalGames = 0;
+            let totalPlayerBets = 0;
+
+            const games = admin.cashers.flatMap((casher) =>
+                (casher.game || []).filter((game) => {
+                    const createdAt = new Date(game.created_at);
+                    return game.status === "completed" && createdAt.getTime() >= todayUTCStart.getTime();
+                })
+            );
+
+            games.forEach((game) => {
+                const derash = Number(game.derash ?? 0);
+                const playerBet = Number(game.player_bet ?? 0);
+                const totalPlayers = Number(game.total_player ?? 0);
+                const playerTotalBet = playerBet * totalPlayers;
+
+                totalSales += derash;
+                totalAdminEarnings += Number(game.admin_price ?? 0);
+                totalCompanyEarnings += Number(game.company_comission ?? 0);
+                totalPlayerBets += playerTotalBet;
+                totalGames++;
+            });
+
+            return {
+                admin_id: admin.id,
+                firstName: admin.user?.first_name ?? "",
+                lastName: admin.user?.last_name ?? "",
+                fee_percentage: admin.fee_percentage,
+                totalSales,
+                totalPlayerBets,
+                totalCut: totalPlayerBets - totalSales,
+                totalAdminEarnings,
+                totalCompanyEarnings,
+                totalGames,
+            };
+        }).filter((entry) => entry.totalGames > 0);
+
+        const sortedToday = todayAdminAggregates.sort((a, b) => b.totalSales - a.totalSales);
+        const paginatedToday = sortedToday.slice(skip, skip + parsedLimit);
+
+        const todaySummary = sortedToday.reduce((acc, cur) => {
+            acc.totalSales += cur.totalSales;
+            acc.totalPlayerBets += cur.totalPlayerBets;
+            acc.totalCut += cur.totalCut;
+            acc.totalAdminEarnings += cur.totalAdminEarnings;
+            acc.totalCompanyEarnings += cur.totalCompanyEarnings;
+            acc.totalGames += cur.totalGames;
+            return acc;
+        }, {
+            totalSales: 0,
+            totalPlayerBets: 0,
+            totalCut: 0,
+            totalAdminEarnings: 0,
+            totalCompanyEarnings: 0,
+            totalGames: 0,
+        });
+
+        const todayPages = Math.ceil(sortedToday.length / parsedLimit);
+
+        let filteredReport = null;
+        if (filters.super_agent_id) {
+            filteredReport = await SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
+        }
+
+        return res.status(200).json(createResponse("success", "Report retrieved", {
+            payload: {
+                per_admin: paginatedToday,
+                overall_summary: todaySummary,
+                pagination: {
+                    totalItems: sortedToday.length,
+                    itemCount: paginatedToday.length,
+                    itemsPerPage: parsedLimit,
+                    totalPages: todayPages,
+                    currentPage: parsedPage,
+                    hasNextPage: parsedPage < todayPages,
+                    hasPreviousPage: parsedPage > 1,
+                },
+                filtered: filteredReport?.data?.payload ?? null,
+            }
+        }));
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -132,8 +267,6 @@ const getExistingAdminIncomes = async (admin_id: string, gameProfit: number) => 
     try {
         const admin = await AdminRepository.getRepo().findById(admin_id);
         if (!admin) return null;
-        
-        // Convert all to numbers once at the start
         const total_earning = parseFloat(admin.total_earning.toString());
         const net_earning = parseFloat(admin.net_earning.toString());
         const packagge = parseFloat(admin.package.toString());
@@ -141,14 +274,14 @@ const getExistingAdminIncomes = async (admin_id: string, gameProfit: number) => 
         gameProfit = parseFloat(gameProfit.toString());
 
         const admin_price = parseFloat(((fee_percentage * gameProfit) / 100).toFixed(2));
-        
+
         return {
             admin,
             fee_percentage,
             admin_price,
             updated_total_earning: parseFloat((total_earning + gameProfit).toFixed(2)),
-            updated_net_earning: parseFloat((net_earning + (gameProfit * (100 - fee_percentage) / 100)).toFixed(2)),
-            updated_package: parseFloat((packagge - ((gameProfit * fee_percentage) / 100)).toFixed(2)),
+            updated_net_earning: parseFloat((net_earning) + (gameProfit).toFixed(2)),
+            updated_package: parseFloat((packagge - ((gameProfit))).toFixed(2)),
         };
     } catch (error) {
         console.error("Error getting admin incomes:", error);
@@ -161,12 +294,12 @@ const updateAdminIncomes = async (admin_id: string, gameProfit: number) => {
         const existingAdminData = await getExistingAdminIncomes(admin_id, gameProfit);
         if (!existingAdminData) throw new Error("Admin data not found");
 
-        const updatedAdmin=await AdminRepository.getRepo().update(existingAdminData.admin, {
+        const updatedAdmin = await AdminRepository.getRepo().update(existingAdminData.admin, {
             total_earning: existingAdminData.updated_total_earning,
-            net_earning: existingAdminData.updated_net_earning,
+            // net_earning: existingAdminData.updated_net_earning,
             package: existingAdminData.updated_package,
         });
-        console.log("UPdated admin is",updatedAdmin);
+        console.log("UPdated admin is", updatedAdmin);
         return existingAdminData.admin_price;
     } catch (error) {
         console.error("Error updating admin incomes:", error);
@@ -178,16 +311,16 @@ const updateCompanyIncomes = async (company_id: string, admin_price: number) => 
     try {
         admin_price = parseFloat(admin_price.toString());
         const existingCompanyEarning = await getExistingCompanyIncomes(company_id, admin_price);
-        
+
         if (!existingCompanyEarning) throw new Error("Company data not found");
 
         const existingCompanyData = await CompanyRepository.getRepo().findById(company_id);
         if (!existingCompanyData) throw new Error("Company not found");
 
-       const updatedCompany= await CompanyRepository.getRepo().update(existingCompanyData, { 
+        const updatedCompany = await CompanyRepository.getRepo().update(existingCompanyData, {
             net_earning: existingCompanyEarning.net_earning
         });
-        console.log("Updated company is",updatedCompany);
+        console.log("Updated company is", updatedCompany);
     } catch (error) {
         console.error("Error updating company incomes:", error);
         throw error;
@@ -197,10 +330,10 @@ const updateCompanyIncomes = async (company_id: string, admin_price: number) => 
 export const updateWinGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
-        console.log("Cshier id is",id)
-        console.log("Request body is",req.body);
-        let {  gameProfit,game_id, winnerCartela } = req.body;
-        
+        console.log("Cshier id is", id)
+        console.log("Request body is", req.body);
+        let { gameProfit, game_id, winnerCartela } = req.body;
+
         gameProfit = parseFloat(gameProfit.toString());
 
         const gameStatus = await getGameStatus(game_id);
@@ -216,13 +349,13 @@ export const updateWinGame = async (req: Request, res: Response, next: NextFunct
         const admin_id = casher.admin.id;
         const company_id = casher.admin.company.id;
         console.log("Initial values - Game Profit:", gameProfit);
-        
+
         const admin_price = await updateAdminIncomes(admin_id, gameProfit);
         console.log("Calculated Admin Price:", admin_price);
-        
-       await updateCompanyIncomes(company_id, admin_price);
-       await updateGameStatus(game_id, winnerCartela);
-     
+
+        await updateCompanyIncomes(company_id, admin_price);
+        await updateGameStatus(game_id, winnerCartela);
+
 
         res.status(200).json(createResponse("success", "Game updated successfully", []));
 
@@ -235,7 +368,7 @@ export const updateGameStatus = async (game_id: string, winnerCartela) => {
     try {
         const existingGame = await GameRepository.getRepo().findById(game_id);
         if (!existingGame) return;
-        await GameRepository.getRepo().update(existingGame, { status:"completed", winner_cards: winnerCartela });
+        await GameRepository.getRepo().update(existingGame, { status: "completed", winner_cards: winnerCartela });
         return;
     } catch (error) {
         console.log(error);

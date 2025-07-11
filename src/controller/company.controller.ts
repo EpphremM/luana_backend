@@ -8,6 +8,10 @@ import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
+import { SuperAgentRepository } from "../database/repositories/super.agent.repository";
+import { TransactionCreateDto } from "../database/type/transaction/transaction.interface";
+import { crteateTransaction } from "./transaction.controller";
+import { AdminRepository } from "../database/repositories/admin.repository";
 
 export const signup = async (
   req: Request,
@@ -230,19 +234,21 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
     );
     const now = new Date();
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    
+
     const weekStart = new Date(todayStart);
     weekStart.setUTCDate(todayStart.getUTCDate() - (todayStart.getUTCDay() || 7) + 1);
-    
-    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1)); 
+
+    const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
     const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
-    
+
     const filterByDate = (games: any[], startDate: Date) =>
       games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
     const calculateEarnings = (games: any[]) =>
-      games.reduce((total, game) => total + parseFloat(game.admin_price), 0);
+games.reduce((total, game) => 
+  total + ((game.total_player * game.player_bet) - game.derash), 0);
 
-    // Prepare metrics
+
+
 
 
     const earnings = {
@@ -271,5 +277,175 @@ export const companyEarnings = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     console.log("Error calculating company earnings:", error);
     next(new AppError("Failed to calculate company metrics", 500, "Operational", error));
+  }
+};
+
+
+export const topUpForSuperAgents = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { agent_id, birrAmount } = req.body;
+
+
+    const superAgent = await SuperAgentRepository.getRepo().findById(agent_id);
+    const company = await CompanyRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!company) {
+      return res.status(404).json(createResponse("fail", "Company not found", []));
+    }
+
+    if (!superAgent) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount = Math.round((100 / Number(superAgent.fee_percentage) * birrAmount));
+    const body: TransactionCreateDto = {
+      type: "send_package",
+      amount_in_birr: birrAmount,
+      amount_in_package: Number(packageAmount),
+      status: "completed",
+      sender_id: `${company.user.id}`,
+      reciever_id: `${superAgent.user.id}`
+    }
+
+    const updated_superAgent_package = Number(superAgent.package) + packageAmount;
+    SuperAgentRepository.getRepo().update(superAgent, { package: updated_superAgent_package });
+    const createdTransaction = await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+
+    res.status(200).json(createResponse("success", "Super agent information updated successfully", superAgent));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
+  }
+};
+
+
+export const topUpForAdmins = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { admin_id, birrAmount } = req.body;
+
+
+    const admin = await AdminRepository.getRepo().findById(admin_id);
+    const company = await CompanyRepository.getRepo().findById(id);
+
+    if (!birrAmount) {
+      return res.status(404).json(createResponse("fail", "Package can not be empty!", []));
+    }
+
+    if (!company) {
+      return res.status(404).json(createResponse("fail", "Company not found", []));
+    }
+
+    if (!admin) {
+      return res.status(404).json(createResponse("fail", "Admin not found", []));
+    }
+
+    const parsedNewPackage = Number(birrAmount);
+    if (isNaN(parsedNewPackage)) {
+      return res.status(400).json(createResponse("fail", "Invalid package value", []));
+    }
+    const packageAmount = Math.floor((100 / Number(admin.fee_percentage) * birrAmount));
+    const body: TransactionCreateDto = {
+      type: "send_package",
+      amount_in_birr: birrAmount,
+      amount_in_package: Number(packageAmount),
+      status: "completed",
+      sender_id: `${company.user.id}`,
+      reciever_id: `${admin.user.id}`
+    }
+
+    const updated_admin_package = Number(admin.package) + packageAmount;
+    AdminRepository.getRepo().update(admin, { package: updated_admin_package });
+
+  const createdTransaction = await crteateTransaction(body)
+    console.log("Created transaction is that happens by super agent tops up for admins is", createdTransaction);
+    res.status(200).json(createResponse("success", "Admin information updated successfully", admin));
+  } catch (error) {
+    next(new AppError("Error updating admin package", 500, "Operational", error));
+  }
+};
+export const getAllAdminActivityStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const admins = await AdminRepository.getRepo().findll();
+
+    const now = new Date();
+
+    const activityStatus = admins.map((admin) => {
+      const allGames = admin.cashers.flatMap(casher => casher.game || []);
+      const completedGames = allGames.filter(game => game.status === "completed");
+
+      const lastGame = completedGames.sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+
+      let status: 'no_games' | 'active' | 'dormant' | 'inactive';
+      let status_message: string;
+
+      if (!lastGame) {
+        status = "no_games";
+        status_message = "No games created yet";
+      } else {
+        const lastGameDate = new Date(lastGame.created_at);
+        const diffMs = now.getTime() - lastGameDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 1) {
+          status = "active";
+          status_message = "Active within the last 24 hours";
+        } else if (diffDays < 7) {
+          status = "dormant";
+          status_message = `Dormant for ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+        } else {
+          status = "inactive";
+          status_message = "Inactive for a long time";
+        }
+      }
+
+      return {
+        admin_id: admin.id,
+        first_name: admin.user?.first_name || "",
+        last_name: admin.user?.last_name || "",
+        username: admin.user?.username || "",
+        totalGames: completedGames.length,
+        lastGameAt: lastGame?.created_at || null,
+        status,
+        status_message,
+      };
+    });
+    const statusPriority = {
+      active: 1,
+      dormant: 2,
+      inactive: 3,
+      no_games: 4,
+    };
+
+    const sortedStatus = activityStatus.sort((a, b) => {
+      const aPriority = statusPriority[a.status];
+      const bPriority = statusPriority[b.status];
+
+      if (aPriority !== bPriority) return aPriority - bPriority;
+
+      const aTime = a.lastGameAt ? new Date(a.lastGameAt).getTime() : 0;
+      const bTime = b.lastGameAt ? new Date(b.lastGameAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    res.status(200).json(createResponse(
+      "success",
+      "All admin activity statuses retrieved successfully",
+      sortedStatus
+    ));
+  } catch (error) {
+    console.error("Error retrieving all admin activity:", error);
+    next(new AppError("Failed to retrieve admin activity", 500, "Operational", error));
   }
 };

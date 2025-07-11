@@ -5,7 +5,10 @@ import {
   getSuperAgentById,
   updateSuperAgent,
   deleteSuperAgent,
-  topUpForAdmins
+  topUpForAdmins,
+  superAgentEarningsSummary,
+  getAdminActivityStatus,
+  getAllSuperAgents,
 } from "../controller/super.agent.controller";
 import { requireRole } from "../utils/role.middleware";
 import { UserRole } from "../database/enum/role.enum";
@@ -21,10 +24,14 @@ export class SuperAgentRoutes {
   private setRoutes() {
     this.router.route("/").post(signupSuperAgent);
     this.router.route("/").get(getSuperAgents);
+    this.router.route("/all-super-agents").get(getAllSuperAgents);
     this.router.route("/:id")
       .get(getSuperAgentById)
       .patch(updateSuperAgent)
       .delete(requireRole(UserRole.Company), deleteSuperAgent);
-      this.router.route("/topup/:id").post(topUpForAdmins);
+    
+       this.router.route("/earnings/:id").get(superAgentEarningsSummary);
+       this.router.route("/admin-status/:id").get(getAdminActivityStatus);
+       this.router.route("/topup/:id").post(topUpForAdmins);
   }
 }
