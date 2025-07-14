@@ -194,7 +194,7 @@ export const deleteCompany = async (
 };
 
 export const createDefaultCompany = async () => {
-  const username = "biruk@company";
+  const username = "epha@company";
 
   const existingUser = await UserRepository.getRepo().findByUsername(username);
   if (existingUser) return;

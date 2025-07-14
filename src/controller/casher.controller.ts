@@ -419,12 +419,13 @@ export const updateBalance = async (req: Request, res: Response, next: NextFunct
 
     const admin_id = cashier.admin.id;
     console.log("Admin_id", admin_id);
-    const { package: packageAmount } = req.body;
+    const {packageAmount } = req.body;
     console.log("Updatable package is",packageAmount)
     console.log("An admin id is",admin_id);
    
-    const admin = await AdminRepository.getRepo().smallUpdate(admin_id,{package:packageAmount});
-  
+    const admin = await AdminRepository.getRepo().smallUpdate(admin_id,{package:(cashier?.admin?.package-packageAmount)
+
+    });
   
 
     res.status(200).json(
