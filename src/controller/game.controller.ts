@@ -214,6 +214,7 @@ export const updateGame = async (req: Request, res: Response, next: NextFunction
         const validationStatus = await validateInput<Partial<GameInterface>>(updateGameSchema, req.body);
         if (validationStatus.status !== "success") {
             console.log(validationStatus.errors)
+            console.log(req.body)
             return next(new AppError("Invalid update data", 400));
         }
 

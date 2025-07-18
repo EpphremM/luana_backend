@@ -131,7 +131,6 @@ const getSuperAgentSalesReport = async (req, res, next) => {
             totalGames: 0,
         });
         const todayPages = Math.ceil(sortedToday.length / parsedLimit);
-        // ✅ Optionally Fetch Filtered Report
         let filteredReport = null;
         if (filters.super_agent_id) {
             filteredReport = await super_agent_repository_1.SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
@@ -193,6 +192,7 @@ const updateGame = async (req, res, next) => {
         const validationStatus = await (0, zod_validation_1.validateInput)(game_schema_1.updateGameSchema, req.body);
         if (validationStatus.status !== "success") {
             console.log(validationStatus.errors);
+            console.log(req.body);
             return next(new app_error_1.AppError("Invalid update data", 400));
         }
         const existingGame = await game_repository_1.GameRepository.getRepo().findById(id);
@@ -241,7 +241,6 @@ const getExistingAdminIncomes = async (admin_id, gameProfit) => {
         const admin = await admin_repository_1.AdminRepository.getRepo().findById(admin_id);
         if (!admin)
             return null;
-        // Convert all to numbers once at the start
         const total_earning = parseFloat(admin.total_earning.toString());
         const net_earning = parseFloat(admin.net_earning.toString());
         const packagge = parseFloat(admin.package.toString());

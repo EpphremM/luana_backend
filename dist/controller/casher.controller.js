@@ -271,7 +271,6 @@ const weeklyReport = async (req, res, next) => {
         fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 14); // 14 days + today = 15 days
         // Initialize empty report for last 15 days
         const report = [];
-        // Pre-fill all 15 days (even if no games exist)
         for (let i = 0; i < 15; i++) {
             const date = new Date(fifteenDaysAgo);
             date.setDate(date.getDate() + i);
@@ -312,31 +311,34 @@ exports.weeklyReport = weeklyReport;
 const findBalance = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const cashier = await casher_repository_1.CasherRepository.getRepo().findById(id);
-        if (!cashier) {
-            return next(new app_error_1.AppError("Cashier not found", 404, "Operational"));
+        const casher = await casher_repository_1.CasherRepository.getRepo().findById(id);
+        if (!casher) {
+            return next(new app_error_1.AppError("Casher not found", 404, "Operational"));
         }
-        res.status(200).json((0, response_body_1.createResponse)("success", "Cashier balace fetched successfully", { package: cashier?.admin?.package }));
+        res.status(200).json((0, response_body_1.createResponse)("success", "Cashier balance fetched successfully", { package: casher?.admin?.package }));
         return;
     }
     catch (error) {
-        return next(new app_error_1.AppError("Error occured during geting cashier cashier data", 400, "Operational"));
+        console.log(error);
+        return next(new app_error_1.AppError("Error occured during geting cashier cashier", 400, "Operational"));
     }
 };
 exports.findBalance = findBalance;
 const updateBalance = async (req, res, next) => {
     try {
         const { id } = req.params;
+        console.log("Update balance id is", id);
         const cashier = await casher_repository_1.CasherRepository.getRepo().findById(id);
         if (!cashier || !cashier.admin) {
             return next(new app_error_1.AppError("Cashier or associated admin not found", 404, "Operational"));
         }
         const admin_id = cashier.admin.id;
+        console.log("Admin_id", admin_id);
         const { package: packageAmount } = req.body;
-        const updated_admin = await admin_repository_1.AdminRepository.getRepo().smallUpdate(admin_id, {
-            package: packageAmount,
-        });
-        res.status(200).json((0, response_body_1.createResponse)("success", "Balance updated successfully", updated_admin));
+        console.log("Updatable package is", packageAmount);
+        console.log("An admin id is", admin_id);
+        const admin = await admin_repository_1.AdminRepository.getRepo().smallUpdate(admin_id, { package: packageAmount });
+        res.status(200).json((0, response_body_1.createResponse)("success", "Balance updated successfully", admin));
     }
     catch (error) {
         return next(new app_error_1.AppError("Error occurred during updating user balance", 400, "Operational"));
