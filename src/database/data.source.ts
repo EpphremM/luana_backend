@@ -18,10 +18,10 @@ export const AppDataSource: DataSource = new DataSource({
   extra: {
     max: 10, 
     idleTimeoutMillis: 30000, 
+  },
+  ssl: {
+    rejectUnauthorized: false 
   }
-  // ssl: {
-  //   rejectUnauthorized: false 
-  // }
   
 });
 const intializeConnection =() => {
