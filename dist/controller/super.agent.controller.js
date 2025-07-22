@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminActivityStatus = exports.superAgentEarningsSummary = exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentById = exports.getAllSuperAgents = exports.getSuperAgents = exports.signupSuperAgent = void 0;
+exports.getAdminActivityStatus = exports.superAgentEarningsSummary = exports.topUpForAdmins = exports.deleteSuperAgent = exports.updateSuperAgent = exports.getSuperAgentUserName = exports.getSuperAgentById = exports.getAllSuperAgents = exports.getSuperAgents = exports.signupSuperAgent = void 0;
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const super_agent_repository_1 = require("../database/repositories/super.agent.repository");
 const app_error_1 = require("../express/error/app.error");
@@ -84,6 +84,20 @@ const getSuperAgentById = async (req, res, next) => {
     }
 };
 exports.getSuperAgentById = getSuperAgentById;
+const getSuperAgentUserName = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const agent = await super_agent_repository_1.SuperAgentRepository.getRepo().findUserName(id);
+        if (!agent) {
+            return next(new app_error_1.AppError("Super Agent not found", 400, "Operational"));
+        }
+        res.status(200).json((0, response_body_1.createResponse)("success", "Super Agent fetched successfully", agent));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error fetching super agent", 500, "Operational"));
+    }
+};
+exports.getSuperAgentUserName = getSuperAgentUserName;
 const updateSuperAgent = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -208,6 +222,7 @@ const superAgentEarningsSummary = async (req, res, next) => {
             totalAdmins: superAgent.admins.length,
             totalCashers: superAgent.admins.reduce((sum, admin) => sum + admin.cashers.length, 0),
             totalGames: allCompletedGames.length,
+            package: superAgent.package,
             first_name: superAgent.user.first_name,
             last_name: superAgent.user.last_name,
             username: superAgent.user.username,

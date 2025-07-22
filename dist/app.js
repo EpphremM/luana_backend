@@ -26,26 +26,26 @@ class App {
     }
     initializeMiddleware() {
         this.app.use((0, cookie_parser_1.default)());
-        // Enhanced CORS configuration
         this.app.use((0, cors_1.default)({
             origin: [
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 // "http://localhost:3001",
                 // "http://localhost:5173",
+                // "http://localhost:33667",
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
                 // "https://luana-bingo.vercel.app", 
                 // "https://fendisha-bingo.onrender.com",
                 // "https://abyssinia-bingo.onrender.com",
                 // "https://tamagnbingo.com",
-                "https://abyssiniagames.com",
-                // "https://xbingoet.com",
+                // "https://abyssiniagames.com",
+                "https://xbingoet.com",
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
             allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-            exposedHeaders: ['Set-Cookie'] // Important for cross-domain cookies
+            exposedHeaders: ['Set-Cookie']
         }));
         // Handle preflight requests
         // this.app.options('/{*any}', cors());

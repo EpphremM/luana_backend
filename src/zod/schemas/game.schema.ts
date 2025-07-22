@@ -13,7 +13,8 @@ export const gameSchema = z.object({
   status: z.nativeEnum(GameStatus).optional(),
   is_aggregated: z.boolean().default(false),
   casher: z.string().uuid("Casher ID must be a valid UUID").optional(), 
-  created_at: z.date().optional() 
+  created_at: z.date().optional() ,
+  casher_id:z.number().optional()
 });
 
 export const updateGameSchema = gameSchema.partial().refine(data => {

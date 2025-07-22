@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllAdminActivityStatus = exports.topUpForAdmins = exports.topUpForSuperAgents = exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanies = exports.signup = void 0;
+exports.getAllAdminActivityStatus = exports.topUpForAdmins = exports.topUpForSuperAgents = exports.companyEarnings = exports.createDefaultCompany = exports.deleteCompany = exports.updateCompany = exports.getOneCompany = exports.getCompanyUserName = exports.getCompanies = exports.signup = void 0;
 const company_schema_1 = require("../zod/schemas/company.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const company_repository_1 = require("../database/repositories/company.repository");
@@ -58,6 +58,20 @@ const getCompanies = async (req, res, next) => {
     }
 };
 exports.getCompanies = getCompanies;
+const getCompanyUserName = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const agent = await company_repository_1.CompanyRepository.getRepo().findUserName(id);
+        if (!agent) {
+            return next(new app_error_1.AppError("Company not found", 400, "Operational"));
+        }
+        res.status(200).json((0, response_body_1.createResponse)("success", "Company fetched successfully", agent));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error fetching company", 500, "Operational"));
+    }
+};
+exports.getCompanyUserName = getCompanyUserName;
 const getOneCompany = async (req, res, next) => {
     try {
         const { id } = req.params;

@@ -12,7 +12,7 @@ id:string;
 status: PermissionStatus;
 @Column({default:0,type:"decimal",precision:30,scale:2})
 package:number;
-@OneToOne(() => User, user => user.admin)
+@OneToOne(() => User, user => user.super_agent)
 @JoinColumn()
 user: User;
 @ManyToOne(()=>SuperAdmin,super_admin=>super_admin.admin)

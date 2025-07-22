@@ -13,7 +13,8 @@ exports.gameSchema = zod_1.z.object({
     status: zod_1.z.nativeEnum(game_enum_1.GameStatus).optional(),
     is_aggregated: zod_1.z.boolean().default(false),
     casher: zod_1.z.string().uuid("Casher ID must be a valid UUID").optional(),
-    created_at: zod_1.z.date().optional()
+    created_at: zod_1.z.date().optional(),
+    casher_id: zod_1.z.number().optional()
 });
 exports.updateGameSchema = exports.gameSchema.partial().refine(data => {
     return Object.keys(data).length > 0;

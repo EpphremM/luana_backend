@@ -7,11 +7,13 @@ const data_source_1 = __importDefault(require("./database/data.source"));
 const dotenv_1 = __importDefault(require("dotenv"));
 require("reflect-metadata");
 const app_1 = __importDefault(require("./app"));
+const inde_1 = require("./inde");
 dotenv_1.default.config();
 const port = process.env.PORT;
 console.log("DB Host:", process.env.DB_HOST);
 const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/build";
 // Initialize DB
+(0, inde_1.killOtherConnections)();
 (0, data_source_1.default)();
 // Load self-signed certificate
 // const sslOptions = {

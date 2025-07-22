@@ -33,9 +33,9 @@ company:SuperAdmin;
 @ManyToOne(()=>Cartela,cartela=>cartela.admin)
 @JoinColumn({name:"cartela_id"})
 cartela:Cartela;
-@ManyToOne(()=>Admin,admin=>admin.super_agent)
-@JoinColumn({name:"super_agent_id"})
-super_agent:SuperAgent;
+@ManyToOne(() => SuperAgent, superAgent => superAgent.admins)
+@JoinColumn({ name: "super_agent_id" })
+super_agent: SuperAgent;
 @Column({nullable:true})
 cartela_id:string;
 @Column({nullable:true})

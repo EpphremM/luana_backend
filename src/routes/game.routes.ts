@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createGame, deleteGame, getAllGames, getFilteredAdminSales, getGamesByCasherId, getOneGame, getSuperAgentSalesReport, updateGame, updateWinGame } from "../controller/game.controller";
+import { createGame, deleteGame, drawGame, getAllGames, getFilteredAdminSales, getGamesByCasherId, getOneGame, getSuperAgentSalesReport, updateGame, updateWinGame } from "../controller/game.controller";
 
 
 
@@ -15,6 +15,7 @@ private setRoutes(){
     this.router.route("/admin-sales").get(getFilteredAdminSales);
     this.router.route("/super-agent-sales").get(getSuperAgentSalesReport);
     this.router.route("/:id").get(getOneGame).patch(updateGame).delete(deleteGame);
+    this.router.route("/draw/:id").patch(drawGame);
     this.router.route("/bycasher/:id").get(getGamesByCasherId);
     this.router.route("/game-update/:id").post(updateWinGame);
 }

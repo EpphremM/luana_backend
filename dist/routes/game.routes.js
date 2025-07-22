@@ -14,6 +14,7 @@ class GameRoutes {
         this.router.route("/admin-sales").get(game_controller_1.getFilteredAdminSales);
         this.router.route("/super-agent-sales").get(game_controller_1.getSuperAgentSalesReport);
         this.router.route("/:id").get(game_controller_1.getOneGame).patch(game_controller_1.updateGame).delete(game_controller_1.deleteGame);
+        this.router.route("/draw/:id").patch(game_controller_1.drawGame);
         this.router.route("/bycasher/:id").get(game_controller_1.getGamesByCasherId);
         this.router.route("/game-update/:id").post(game_controller_1.updateWinGame);
     }

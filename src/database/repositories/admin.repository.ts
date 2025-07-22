@@ -23,8 +23,17 @@ export class AdminRepository {
     return await this.adminRepository.findOneBy({ id });
   }
   async findll(){
-    return await this.adminRepository.find({relations: ["user", "cashers","super_agent", "cashers.user", "company", "cashers.game", "cartela", "cartela.cards"]});
+    return await this.adminRepository.find({relations: ["user", "cashers","cashers.game"]});
   }
+   async findUserName(id:string){
+      return await this.adminRepository.findOne({
+    where: { id },
+    relations: [
+      "user",
+    ],
+  });
+  }
+
   async find(pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const parsedPage = Math.max(1, Number(page));
@@ -34,9 +43,10 @@ export class AdminRepository {
       .leftJoinAndSelect('admin.cashers', 'casher')
       .leftJoinAndSelect('admin.company', 'company')
       .leftJoinAndSelect('admin.user', 'user')
-      .leftJoinAndSelect('admin.super_agent', 'super-agent')
-      .leftJoinAndSelect('casher.game', 'game')
-      .leftJoinAndSelect('admin.cartela', 'cartela')
+      .leftJoinAndSelect('admin.super_agent', 'super_agent')
+  .leftJoinAndSelect('super_agent.user', 'super_user');
+      // .leftJoinAndSelect('casher.game', 'game')
+      // .leftJoinAndSelect('admin.cartela', 'cartela')
     const [admins, total] = await query
       .take(Number(parsedLimit))
       .skip(skip)
@@ -140,10 +150,7 @@ export class AdminRepository {
 
   const query = this.adminRepository.createQueryBuilder("admin")
     .leftJoinAndSelect("admin.cashers", "casher")
-    .leftJoinAndSelect("admin.company", "company")
     .leftJoinAndSelect("admin.user", "user")
-    .leftJoinAndSelect("admin.super_agent", "super_agent")
-    .leftJoinAndSelect("admin.cartela", "cartela")
     .where("admin.super_agent_id = :superAgentId", { superAgentId }) 
 
   const [admins, total] = await query

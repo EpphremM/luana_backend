@@ -22,6 +22,14 @@ export class CompanyRepository {
     async find() {
         return await this.companyRepository.find({ relations: ["user","admin","admin.cashers","admin.cashers.game"] });
     }
+ async findUserName(id:string){
+      return await this.companyRepository.findOne({
+    where: { id },
+    relations: [
+      "user",
+    ],
+  });
+  }
 
     async findById(id: string) {
         const company = await this.companyRepository.findOne({

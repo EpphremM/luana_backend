@@ -72,6 +72,18 @@ export const getCompanies = async (
     next(new AppError("Failed to fetch companies", 500, "Operational"));
   }
 };
+export const getCompanyUserName=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+const { id } = req.params;
+    const agent = await CompanyRepository.getRepo().findUserName(id);
+    if (!agent) {
+      return next(new AppError("Company not found", 400, "Operational"));
+    }
+    res.status(200).json(createResponse("success", "Company fetched successfully", agent));
+  }catch(error){
+    next(new AppError("Error fetching company", 500, "Operational"));
+  }
+}
 
 export const getOneCompany = async (
   req: Request,

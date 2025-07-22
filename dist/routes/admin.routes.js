@@ -15,6 +15,7 @@ class AdminRoutes {
         this.router.route("/").get(admin_controller_1.getAdmin);
         this.router.route("/all-admins").get(admin_controller_1.getAllAdmins);
         this.router.route("/earnings/:id").get(admin_controller_1.AdminEarnings);
+        this.router.route("/username/:id").get(admin_controller_1.getAdminUserName);
         this.router.route("/report/last15days/super/:super_id").get(admin_controller_1.superAdminAdmin15DayReport);
         this.router.route("/report/last15days").get(admin_controller_1.companyAdmin15DayReport);
         this.router.route("/bysuperagent/:superAgentId").get(admin_controller_1.getAdminsBySuperAgent);

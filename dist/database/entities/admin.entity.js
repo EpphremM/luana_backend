@@ -65,7 +65,7 @@ __decorate([
     __metadata("design:type", cartela_entity_1.Cartela)
 ], Admin.prototype, "cartela", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => Admin, admin => admin.super_agent),
+    (0, typeorm_1.ManyToOne)(() => agent_entity_1.SuperAgent, superAgent => superAgent.admins),
     (0, typeorm_1.JoinColumn)({ name: "super_agent_id" }),
     __metadata("design:type", agent_entity_1.SuperAgent)
 ], Admin.prototype, "super_agent", void 0);

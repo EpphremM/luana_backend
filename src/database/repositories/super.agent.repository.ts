@@ -145,7 +145,7 @@ const NormalAdmin=await AdminRepository.getRepo().findll();
 
   async findAll() {
     return await this.superAgentRepository.find({
-      relations: ["user", "company","admins","admins.cashers","admins.cartela"]
+      relations: ["user"]
     });
   }
 
@@ -178,6 +178,15 @@ const query = this.superAgentRepository.createQueryBuilder("super_agent")
         hasPreviousPage: parsedPage > 1,
       }
     };
+  }
+
+  async findUserName(id:string){
+      return await this.superAgentRepository.findOne({
+    where: { id },
+    relations: [
+      "user",
+    ],
+  });
   }
 
  async findById(id: string) {

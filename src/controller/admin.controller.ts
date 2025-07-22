@@ -48,6 +48,20 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     next(new AppError("Error occurred. Please try again.", 400, "Operational"));
   }
 };
+
+export const getAdminUserName=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+const { id } = req.params;
+    const agent = await AdminRepository.getRepo().findUserName(id);
+    if (!agent) {
+      return next(new AppError("Admin not found", 400, "Operational"));
+    }
+    res.status(200).json(createResponse("success", "Admin fetched successfully", agent));
+  }catch(error){
+    next(new AppError("Error fetching admin", 500, "Operational"));
+  }
+}
+
 export const getAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pagination: PaginationDto = req.query as unknown as PaginationDto;

@@ -210,20 +210,23 @@ export const getGamesByCasherId = async (req: Request, res: Response, next: Next
 export const updateGame = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-
         const validationStatus = await validateInput<Partial<GameInterface>>(updateGameSchema, req.body);
         if (validationStatus.status !== "success") {
-            console.log(validationStatus.errors)
-            console.log(req.body)
             return next(new AppError("Invalid update data", 400));
         }
+        console.log("Request body for the updated game data",req.body)
+const { status, winner_cards, total_calls } = req.body;
 
         const existingGame = await GameRepository.getRepo().findById(id);
         if (!existingGame) {
             return next(new AppError("Game not found", 404, "Operational"));
         }
 
-        const updatedGame = await GameRepository.getRepo().update(existingGame, req.body);
+        const updatedGame = await GameRepository.getRepo().update(existingGame, {
+  status,
+  winner_cards,
+  total_calls,
+});
 
         res.status(200).json(createResponse("success", "Game updated successfully", updatedGame));
     } catch (error) {
@@ -300,7 +303,6 @@ const updateAdminIncomes = async (admin_id: string, gameProfit: number) => {
             // net_earning: existingAdminData.updated_net_earning,
             package: existingAdminData.updated_package,
         });
-        console.log("UPdated admin is", updatedAdmin);
         return existingAdminData.admin_price;
     } catch (error) {
         console.error("Error updating admin incomes:", error);
@@ -321,7 +323,6 @@ const updateCompanyIncomes = async (company_id: string, admin_price: number) => 
         const updatedCompany = await CompanyRepository.getRepo().update(existingCompanyData, {
             net_earning: existingCompanyEarning.net_earning
         });
-        console.log("Updated company is", updatedCompany);
     } catch (error) {
         console.error("Error updating company incomes:", error);
         throw error;
@@ -331,16 +332,14 @@ const updateCompanyIncomes = async (company_id: string, admin_price: number) => 
 export const updateWinGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { id } = req.params;
-        console.log("Cshier id is", id)
-        console.log("Request body is", req.body);
         let { gameProfit, game_id, winnerCartela } = req.body;
 
         gameProfit = parseFloat(gameProfit.toString());
 
         const gameStatus = await getGameStatus(game_id);
-        if (gameStatus === "completed") {
-            return next(new AppError("Game already updated", 400, "Operational"));
-        }
+        // if (gameStatus === "completed") {
+        //     return next(new AppError("Game already updated", 400, "Operational"));
+        // }
 
         const casher = await CasherRepository.getRepo().findById(id);
         if (!casher || !casher.admin) {
@@ -349,13 +348,11 @@ export const updateWinGame = async (req: Request, res: Response, next: NextFunct
 
         const admin_id = casher.admin.id;
         const company_id = casher.admin.company.id;
-        console.log("Initial values - Game Profit:", gameProfit);
 
         const admin_price = await updateAdminIncomes(admin_id, gameProfit);
-        console.log("Calculated Admin Price:", admin_price);
 
         await updateCompanyIncomes(company_id, admin_price);
-        await updateGameStatus(game_id, winnerCartela);
+        await updateCompletedGameStatus(game_id, winnerCartela);
 
 
         res.status(200).json(createResponse("success", "Game updated successfully", []));
@@ -365,7 +362,7 @@ export const updateWinGame = async (req: Request, res: Response, next: NextFunct
         next(new AppError("Error occurred during game update", 400, "Operational", error));
     }
 };
-export const updateGameStatus = async (game_id: string, winnerCartela) => {
+export const updateCompletedGameStatus = async (game_id: string, winnerCartela) => {
     try {
         const existingGame = await GameRepository.getRepo().findById(game_id);
         if (!existingGame) return;
@@ -377,6 +374,64 @@ export const updateGameStatus = async (game_id: string, winnerCartela) => {
     return null;
 }
 
+export const drawGame = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { cashier_id ,winnerCartelas} = req.body;
+
+    const existingGame = await GameRepository.getRepo().findById(id);
+    console.log("Exising game status is",existingGame.status);
+
+    if (!existingGame) {
+      return next(new AppError("Game not found", 400, "Operational"));
+    }
+
+    console.log("Existing game found:", existingGame.id);
+
+    if (existingGame.status === "draw") {
+      return next(new AppError("Game already updated", 400, "Operational"));
+    }
+
+    if (existingGame.casher_id !== cashier_id || existingGame.winner_cards.length < 2) {
+      return next(new AppError("Invalid game or invalid user from draw game", 400, "Operational"));
+    }
+
+    const cashier = await CasherRepository.getRepo().findById(cashier_id);
+    if (!cashier) {
+      return next(new AppError("Cashier not found!", 400, "Operational"));
+    }
+
+    const admin = await AdminRepository.getRepo().findById(cashier.admin_id);
+    if (!admin) {
+      return next(new AppError("Admin not found!", 400, "Operational"));
+    }
+
+    const company = await CompanyRepository.getRepo().findById(cashier.admin.company.id);
+    if (!company) {
+      return next(new AppError("Company not found!", 400, "Operational"));
+    }
+
+    const gameProfit = existingGame.total_player * existingGame.player_bet - existingGame.derash;
+    console.log("Game profite is",gameProfit);
+    console.log("Admin calculated package",);
+
+    const updatedGame = await GameRepository.getRepo().update(existingGame, { status: "draw" ,winner_cards:winnerCartelas});
+    const updatedAdmin = await AdminRepository.getRepo().update(admin, {
+      total_earning: admin.total_earning - gameProfit,
+      package: Number(admin.package) + gameProfit,
+    });
+
+    const updatedCompany = await CompanyRepository.getRepo().update(company, {
+      net_earning: Number(company.net_earning) - gameProfit,
+    });
+
+
+    res.status(200).json(createResponse("success", "Draw game status updated successfully!", updatedGame));
+  } catch (error) {
+    next(new AppError("Error occurred during game update", 400, "Operational", error));
+  }
+};
+
 const getGameStatus = async (game_id: string) => {
     try {
         const game = await GameRepository.getRepo().findById(game_id);
@@ -387,3 +442,4 @@ const getGameStatus = async (game_id: string) => {
     }
     return null;
 }
+

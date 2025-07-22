@@ -19,6 +19,11 @@ exports.AppDataSource = new typeorm_1.DataSource({
     entities: [__dirname + '/entities/*.entity.{ts,js}', __dirname + "/../payment/entities/**/*.ts"],
     migrations: [__dirname + "/migration/**/*.ts"],
     synchronize: true,
+    poolSize: 10,
+    extra: {
+        max: 10,
+        idleTimeoutMillis: 30000,
+    }
     // ssl: {
     //   rejectUnauthorized: false 
     // }

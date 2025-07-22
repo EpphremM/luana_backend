@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminsBySuperAgent = exports.oneAdmin15DayReport = exports.refundGame = exports.superAdminAdmin15DayReport = exports.companyAdmin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAllAdmins = exports.getAdmin = exports.signup = void 0;
+exports.getAdminsBySuperAgent = exports.oneAdmin15DayReport = exports.refundGame = exports.superAdminAdmin15DayReport = exports.companyAdmin15DayReport = exports.AdminEarnings = exports.deleteAdmin = exports.update = exports.getOne = exports.getAllAdmins = exports.getAdmin = exports.getAdminUserName = exports.signup = void 0;
 const admin_schema_1 = require("../zod/schemas/admin.schema");
 const zod_validation_1 = require("../zod/middleware/zod.validation");
 const admin_repository_1 = require("../database/repositories/admin.repository");
@@ -46,6 +46,20 @@ const signup = async (req, res, next) => {
     }
 };
 exports.signup = signup;
+const getAdminUserName = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const agent = await admin_repository_1.AdminRepository.getRepo().findUserName(id);
+        if (!agent) {
+            return next(new app_error_1.AppError("Admin not found", 400, "Operational"));
+        }
+        res.status(200).json((0, response_body_1.createResponse)("success", "Admin fetched successfully", agent));
+    }
+    catch (error) {
+        next(new app_error_1.AppError("Error fetching admin", 500, "Operational"));
+    }
+};
+exports.getAdminUserName = getAdminUserName;
 const getAdmin = async (req, res, next) => {
     try {
         const pagination = req.query;

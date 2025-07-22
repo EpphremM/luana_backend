@@ -160,6 +160,7 @@ const cashierEarnings = async (req, res, next) => {
             return next(new app_error_1.AppError("Cashier not found", 400, "Operational"));
         }
         const completedGames = cashier.game.filter(game => game.status === "completed");
+        const allGames = cashier.game;
         const now = new Date();
         const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
         const weekStart = new Date(todayStart);
@@ -176,6 +177,7 @@ const cashierEarnings = async (req, res, next) => {
             last_name: cashier.user.last_name,
             status: cashier.status,
             games: filterByDate(completedGames, twoDaysAgo).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+            allGames: filterByDate(allGames, twoDaysAgo).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
             package: cashier?.admin?.package,
             today: calculateEarnings(filterByDate(completedGames, todayStart)),
             thisWeek: calculateEarnings(filterByDate(completedGames, weekStart)),

@@ -6,6 +6,7 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 import express from "express";
+import { killOtherConnections } from "./inde";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ console.log("DB Host:", process.env.DB_HOST);
 const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/build";
 
 // Initialize DB
+killOtherConnections()
 initializeConnection();
 
 // Load self-signed certificate

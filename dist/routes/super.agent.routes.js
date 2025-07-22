@@ -19,6 +19,7 @@ class SuperAgentRoutes {
             .patch(super_agent_controller_1.updateSuperAgent)
             .delete((0, role_middleware_1.requireRole)(role_enum_1.UserRole.Company), super_agent_controller_1.deleteSuperAgent);
         this.router.route("/earnings/:id").get(super_agent_controller_1.superAgentEarningsSummary);
+        this.router.route("/username/:id").get(super_agent_controller_1.getSuperAgentUserName);
         this.router.route("/admin-status/:id").get(super_agent_controller_1.getAdminActivityStatus);
         this.router.route("/topup/:id").post(super_agent_controller_1.topUpForAdmins);
     }

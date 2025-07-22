@@ -89,6 +89,19 @@ export const getSuperAgentById = async (req: Request, res: Response, next: NextF
   }
 };
 
+export const getSuperAgentUserName=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+const { id } = req.params;
+    const agent = await SuperAgentRepository.getRepo().findUserName(id);
+    if (!agent) {
+      return next(new AppError("Super Agent not found", 400, "Operational"));
+    }
+    res.status(200).json(createResponse("success", "Super Agent fetched successfully", agent));
+  }catch(error){
+    next(new AppError("Error fetching super agent", 500, "Operational"));
+  }
+}
+
 export const updateSuperAgent = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -233,6 +246,7 @@ export const superAgentEarningsSummary = async (req: Request, res: Response, nex
       totalAdmins: superAgent.admins.length,
       totalCashers: superAgent.admins.reduce((sum, admin) => sum + admin.cashers.length, 0),
       totalGames: allCompletedGames.length,
+      package:superAgent.package,
       first_name: superAgent.user.first_name,
       last_name: superAgent.user.last_name,
       username: superAgent.user.username,
