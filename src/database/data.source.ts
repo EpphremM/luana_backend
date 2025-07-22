@@ -20,7 +20,7 @@ export const AppDataSource: DataSource = new DataSource({
     idleTimeoutMillis: 30000, 
   },
   ssl: {
-    rejectUnauthorized: false,
+    rejectUnauthorized: true,
   },
   
 });
