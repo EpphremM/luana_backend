@@ -105,10 +105,10 @@ export const validateSession = async (req: Request, res: Response, next: NextFun
     }
 
     const currentFingerprint = generateDeviceFingerprint(req);
-    if (decoded.fingerprint !== currentFingerprint) {
-      next(new AppError("Device mismatch", 401, "Operational"));
-      return;
-    }
+    // if (decoded.fingerprint !== currentFingerprint) {
+    //   next(new AppError("Device mismatch", 401, "Operational"));
+    //   return;
+    // }
     console.log("User from validation session is", decoded);
     res.status(200).json(
       createResponse("success", "Session valid", {

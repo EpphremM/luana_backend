@@ -113,9 +113,9 @@ export const refreshUserToken = async (refreshToken: string, fingerprint: string
     throw new Error('Invalid refresh token');
   }
 
-  if (token.deviceFingerprint !== fingerprint) {
-    throw new Error('Device mismatch');
-  }
+  // if (token.deviceFingerprint !== fingerprint) {
+  //   throw new Error('Device mismatch');
+  // }
 
   const newAccessToken = generateAccessToken(token.user, fingerprint);
   const newRefreshToken = generateRefreshToken();

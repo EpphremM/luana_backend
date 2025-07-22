@@ -28,11 +28,11 @@ export const requireRole = (roles: UserRole | UserRole[]) => {
         return;
       }
 
-      const fingerprint = generateDeviceFingerprint(req);
-      if (decoded.fingerprint !== fingerprint) {
-        res.status(401).json({ message: 'Device mismatch' });
-        return;
-      }
+      // const fingerprint = generateDeviceFingerprint(req);
+      // if (decoded.fingerprint !== fingerprint) {
+      //   res.status(401).json({ message: 'Device mismatch' });
+      //   return;
+      // }
 
       req.user = decoded;
       next(); // Properly continue to next middleware
