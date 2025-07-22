@@ -14,15 +14,16 @@ export const AppDataSource: DataSource = new DataSource({
   entities: [__dirname + '/entities/*.entity.{ts,js}',__dirname+"/../payment/entities/**/*.ts"],
   migrations: [__dirname + "/migration/**/*.ts"],
   synchronize: true,
+    ssl: {
+    rejectUnauthorized: false,
+  },
+  
    poolSize: 10, 
   extra: {
     max: 10, 
     idleTimeoutMillis: 30000, 
   },
-  ssl: {
-    rejectUnauthorized: true,
-  },
-  
+
 });
 const intializeConnection =() => {
   try { 
