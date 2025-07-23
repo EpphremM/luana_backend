@@ -40,8 +40,8 @@ class App {
                 // "https://abyssinia-bingo.onrender.com",
                 // "https://tamagnbingo.com",
                 // "https://abyssiniagames.com",
-                "https://x-bingo.vercel.app",
-                "https://xbingoet.com",
+                // "https://x-bingo.vercel.app",
+                "https://www.xbingoet.com"
             ],
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true,
