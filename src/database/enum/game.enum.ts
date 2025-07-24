@@ -1,6 +1,7 @@
 export enum GameStatus{
     Completed="completed",
     Playing="playing",
-   Cancellel="canceled"
+   Cancellel="canceled",
+   Draw="draw"
 
 }
