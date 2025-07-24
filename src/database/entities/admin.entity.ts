@@ -33,7 +33,7 @@ company:SuperAdmin;
 @ManyToOne(()=>Cartela,cartela=>cartela.admin)
 @JoinColumn({name:"cartela_id"})
 cartela:Cartela;
-@ManyToOne(()=>Admin,admin=>admin.super_agent)
+@ManyToOne(()=>SuperAgent,sup=>sup.admins)
 @JoinColumn({name:"super_agent_id"})
 super_agent:SuperAgent;
 @Column({nullable:true})
