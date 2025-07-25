@@ -30,10 +30,10 @@ app.get('*', (req, res) => {
 });
 
 // Start HTTPS server
-https.createServer(sslOptions, app).listen(port, () => {
-  console.log(`✅ HTTPS server running at https://localhost:${port}`);
-});
+// https.createServer(sslOptions, app).listen(port, () => {
+//   console.log(`✅ HTTPS server running at https://localhost:${port}`);
+// });
 
-// app.listen(3000,()=>{
-// console.log("Server is running...");
-// })
+app.listen(3000,()=>{
+console.log("Server is running...");
+})

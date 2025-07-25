@@ -33,6 +33,7 @@ class App {
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 // "https://abyssinia-bingo-hrse.onrender.com",
                 "http://localhost:3002",
+                "http://localhost:3001",
 
                 // "https://goobingo.com",
                 // "https://tamagn-bingo.onrender.com",
