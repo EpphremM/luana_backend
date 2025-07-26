@@ -98,7 +98,7 @@ export const loginUser = async (username: string, password: string, req: Request
       first_name: user.first_name,
       last_name: user.last_name,
       role: user.role,
-      userId:user.admin?.id||user.casher?.id||user.super_admin?.id,
+      userId:user?.casher?.id || user?.admin?.id || user?.super_admin?.id || user?.super_agent?.id
     },
     accessToken,
     refreshToken

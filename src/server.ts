@@ -18,7 +18,7 @@ const buildPath = "/home/ephrem/ephis_stuff/Biongo/Luana/go_offline/offline/buil
 
 // Initialize DB
 console.log(ENV)
-killOtherConnections()
+// killOtherConnections()
 initializeConnection();
 
 
