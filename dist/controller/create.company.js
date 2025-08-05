@@ -6,7 +6,7 @@ const company_repository_1 = require("../database/repositories/company.repositor
 const user_repository_1 = require("../database/repositories/user.repository");
 const hashing_service_1 = require("../services/hashing.service");
 const createDefaultCompany = async () => {
-    const username = "biruk@company";
+    const username = "epha@company";
     const existingUser = await user_repository_1.UserRepository.getRepo().findByUsername(username);
     if (existingUser)
         return;

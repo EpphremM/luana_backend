@@ -202,7 +202,7 @@ const superAgentEarningsSummary = async (req, res, next) => {
         const monthStart = new Date(Date.UTC(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), 1));
         const yearStart = new Date(Date.UTC(todayStart.getUTCFullYear(), 0, 1));
         const filterByDate = (games, startDate) => games.filter(game => new Date(game.created_at).getTime() >= startDate.getTime());
-        const calculateEarnings = (games) => games.reduce((total, game) => total + parseFloat(game.admin_price || 0), 0);
+        const calculateEarnings = (games) => games.reduce((total, game) => total + ((game.total_player * game.player_bet) - game.derash), 0);
         const earnings = {
             createdAt: superAgent.user.created_at,
             totalAdmins: superAgent.admins.length,

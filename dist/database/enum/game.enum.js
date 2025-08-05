@@ -6,4 +6,5 @@ var GameStatus;
     GameStatus["Completed"] = "completed";
     GameStatus["Playing"] = "playing";
     GameStatus["Cancellel"] = "canceled";
+    GameStatus["Draw"] = "draw";
 })(GameStatus || (exports.GameStatus = GameStatus = {}));

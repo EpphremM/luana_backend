@@ -131,7 +131,6 @@ const getSuperAgentSalesReport = async (req, res, next) => {
             totalGames: 0,
         });
         const todayPages = Math.ceil(sortedToday.length / parsedLimit);
-        // ✅ Optionally Fetch Filtered Report
         let filteredReport = null;
         if (filters.super_agent_id) {
             filteredReport = await super_agent_repository_1.SuperAgentRepository.getRepo().findSuperAgentSalesReport(pagination, filters);
@@ -241,7 +240,6 @@ const getExistingAdminIncomes = async (admin_id, gameProfit) => {
         const admin = await admin_repository_1.AdminRepository.getRepo().findById(admin_id);
         if (!admin)
             return null;
-        // Convert all to numbers once at the start
         const total_earning = parseFloat(admin.total_earning.toString());
         const net_earning = parseFloat(admin.net_earning.toString());
         const packagge = parseFloat(admin.package.toString());
