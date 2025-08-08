@@ -1,19 +1,16 @@
 import { NextFunction, Request, Response } from "express";
-import { SuperInterface } from "../database/type/super_admin/super.admin.interface";
-import { companySchema, updateCompanySchema } from "../zod/schemas/company.schema";
+import { updateCompanySchema } from "../zod/schemas/company.schema";
 import { validateInput } from "../zod/middleware/zod.validation";
-import { CompanyRepository } from "../database/repositories/company.repository";
 import { AppError } from "../express/error/app.error";
 import { hashPassword } from "../services/hashing.service";
 import { UserRepository } from "../database/repositories/user.repository";
 import { UserRole } from "../database/enum/role.enum";
 import { createResponse } from "../express/types/response.body";
 import { CasherInterface } from "../database/type/casher/casher.interface";
-import { casherSchema } from "../zod/schemas/casher.schema";
+import { casherSchema, updateCasherSchema } from "../zod/schemas/casher.schema";
 import { CasherRepository } from "../database/repositories/casher.repository";
 import { GameRepository } from "../database/repositories/game.repository";
 import { PaginationDto } from "../DTO/pagination.dto";
-import { GameInterface } from "../database/type/game/game.interface";
 import { AdminRepository } from "../database/repositories/admin.repository";
 
 export const signup = async (
@@ -121,10 +118,8 @@ export const updateCasher = async (
       password,
       confirm_password
     } = req.body;
-
-    // Validate company data if provided
     if (casherData) {
-      const validation = await validateInput(updateCompanySchema, { company: casherData });
+      const validation = await validateInput(updateCasherSchema, { casher: casherData });
       if (validation.status !== "success") {
         res.status(400).json({
           status: "fail",
@@ -136,6 +131,10 @@ export const updateCasher = async (
       if (casherData.status !== undefined) {
         existingCasher.status = casherData.status;
       }
+      if (casherData.min_player_bet !== 0 || casherData.min_player_bet !== undefined || casherData.min_player_bet !== null) {
+        existingCasher.min_player_bet = casherData.min_player_bet
+      }
+
       if (existingCasher.user) {
         if (first_name) existingCasher.user.first_name = first_name;
         if (last_name) existingCasher.user.last_name = last_name;
@@ -151,11 +150,12 @@ export const updateCasher = async (
       // Return response
       res.status(200).json({
         status: "success",
-        message: "Company updated successfully",
+        message: "casher updated successfully",
         data: {
           payload: {
             id: updatedCasher.id,
             status: updatedCasher.status,
+            min_player_bet: updatedCasher?.min_player_bet,
             first_name: updatedCasher.user?.first_name,
             last_name: updatedCasher.user?.last_name,
             username: updatedCasher.user?.username,
@@ -230,7 +230,7 @@ export const cashierEarnings = async (req: Request, res: Response, next: NextFun
       games: filterByDate(completedGames, twoDaysAgo).sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ),
-      allGames:filterByDate(allGames, twoDaysAgo).sort(
+      allGames: filterByDate(allGames, twoDaysAgo).sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ),
       package: cashier?.admin?.package,
@@ -393,7 +393,7 @@ export const weeklyReport = async (req: Request, res: Response, next: NextFuncti
 export const findBalance = async (req: Request, res: Response, next: NextFunction) => {
   try {
 
-  const { id } = req.params;
+    const { id } = req.params;
     const casher = await CasherRepository.getRepo().findById(id);
 
 
@@ -425,12 +425,12 @@ export const updateBalance = async (req: Request, res: Response, next: NextFunct
     const admin_id = cashier.admin.id;
     console.log("Admin_id", admin_id);
     const { package: packageAmount } = req.body;
-    console.log("Updatable package is",packageAmount)
-    console.log("An admin id is",admin_id);
-   
-    const admin = await AdminRepository.getRepo().smallUpdate(admin_id,{package:packageAmount});
-  
-  
+    console.log("Updatable package is", packageAmount)
+    console.log("An admin id is", admin_id);
+
+    const admin = await AdminRepository.getRepo().smallUpdate(admin_id, { package: packageAmount });
+
+
 
     res.status(200).json(
       createResponse("success", "Balance updated successfully", admin)

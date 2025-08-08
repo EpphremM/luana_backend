@@ -18,6 +18,6 @@ private setRoutes(){
     this.router.route("/earnings/:id").get(cashierEarnings);
     this.router.route("/weekly/:id").get(weeklyEarnings);
     this.router.route("/report/:id").get(weeklyReport);
-    this.router.route("/:id").get(getOneCasher).patch(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),updateCasher).delete(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),deleteCasher);
+    this.router.route("/:id").get(getOneCasher).patch(updateCasher).delete(requireRole([UserRole.Admin,UserRole.Casher,UserRole.Company]),deleteCasher);
 }
 }

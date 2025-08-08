@@ -3,6 +3,7 @@ import { PermissionStatus } from "../../database/enum/permission.enum";
 
 const casherDetailsSchema = z.object({
   status: z.nativeEnum(PermissionStatus).default(PermissionStatus.Pemitted),
+  min_player_bet:z.number().min(10,{message:"Minimum player bet amount is 10"}).default(0).optional(),
   admin_id:z.number()
 });
 

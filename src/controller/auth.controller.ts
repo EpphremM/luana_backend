@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import {
   loginUser,
   refreshUserToken,
-  logoutUser,
   generateDeviceFingerprint,
   decodeToken
 } from '../services/auth.service';
@@ -30,7 +29,7 @@ const setAuthCookies = (res: Response, accessToken: string, refreshToken: string
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
     path: "/",
-    maxAge: 60 * 60 * 1000,
+    maxAge: 2*24*60 * 60 * 1000,
   });
 
   res.cookie('refresh_token', refreshToken, {
