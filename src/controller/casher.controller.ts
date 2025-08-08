@@ -191,6 +191,21 @@ export const deleteCasher = async (
   }
 };
 
+
+export const getMinBetAmount=async(req:Request,res:Response,next:NextFunction)=>{
+  try{
+    const {id}=req.params;
+const cashier=await CasherRepository.getRepo().findCasherById(id);
+if(!cashier){
+   res.status(404).json(createResponse("fail", "Casher not found", []));
+      return;
+}
+res.status(200).json(createResponse("success","Casher fetched successsfully",cashier))
+  }catch(error){
+      next(new AppError("Error on fetching casher for minimum be amount", 500, "Operational", error));
+  }
+}
+
 export const cashierEarnings = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;

@@ -32,6 +32,13 @@ export class CasherRepository {
         return casher;
     }
     
+    async findCasherById(id: string) {
+        const casher = await this.casherRepository.findOne({
+            where: { id },
+        });
+        return casher;
+    }
+    
     async delete(id: string) {
         return this.casherRepository.delete(id);
     }
