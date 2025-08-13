@@ -10,9 +10,9 @@ export class Transaction implements TransactionInterface {
     id: string;
     @Column({ type: "enum", enum: transactionType, nullable: true })
     type: string;
-    @Column({nullable:false,default:0})
+    @Column({type:"decimal",precision:30,scale:2,nullable:true})
     amount_in_birr: number;
-    @Column({nullable:false,default:0})
+    @Column({type:"decimal",precision:30,scale:2,nullable:true})
     amount_in_package: number;
     @Column({ type: "enum", enum: transactionStatus, default: "pending" })
     status: string
